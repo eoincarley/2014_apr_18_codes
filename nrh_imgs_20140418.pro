@@ -3,18 +3,17 @@ pro nrh_imgs_20140418
 	;Code to produce pngs of NRH observations of the 2014 April 18 event 
 	;Produces pngs for all frequencies
 	;Written 2014-Oct-2
-	
-	cd,'~/Data/2014_Apr_18/nrh/'
+	cd,'~/Data/2014_Apr_18/radio/nrh/'
 	filenames = findfile('*.fts')
-	;--------------------------------------------------------;
+	;---------------------------------------------------------------;
 	;	  Read Data 5 min chunks to prevent RAM overload
 	;
 	window, 0, xs=700, ys=700, retain=2
-	loadct, 3, /silent
+	loadct, 39, /silent
 	!p.charsize=1.5
 	tstart = anytim(file2time('20110922_124800'),/utim)
 	tend   = anytim(file2time('20110922_132158'),/utim)
-	FOR k=1, n_elements(filenames)-1 DO BEGIN			;LOOP THROUGH THE FILES
+	FOR k=0, n_elements(filenames)-1 DO BEGIN			;LOOP THROUGH THE FILES
 		FOR j=0., 6. DO BEGIN							;LOOP THROUGH 5 MIN CHUNKS
 			t0 = anytim(tstart, /utim) + j*5.0*60.0
 			t1   = anytim(tstart, /utim) + (j+1.0)*5.0*60.0
@@ -23,12 +22,6 @@ pro nrh_imgs_20140418
 			t0 = anytim(t0, /yoh, /trun, /time_only)
 			t1   = anytim(t1, /yoh, /trun, /time_only)
 		
-			print,' '
-			print, t0
-			print, t1
-			print,' '
-			print, anytim(tend, /yoh)
-			
 			read_nrh, filenames[k], $
 					  nrh_hdr, $
 					  nrh_data, $
@@ -51,16 +44,17 @@ pro nrh_imgs_20140418
 			FOR i=0, n_elements(nrh_times)-1, 10 DO BEGIN	;LOOP THROUGH IMAGES
 				plot_map, nrh_map[i], $
 						  title='NRH '+string(nrh_hdr[0].freq, format='(I03)')+' MHz '+$
-						  string( anytim( nrh_times[i], /yoh, /trun) )+' UT'
+						  string( anytim( nrh_times[i], /yoh, /trun) )+' UT', $
+						  dmin = 1e6;, dmax = 1e8
 				
 				plot_helio, nrh_times[i], $
 							/over, $
 							gstyle=1, $
 							gthick=1.0, $
-							gcolor=254, $
+							gcolor=255, $
 							grid_spacing=15.0
-							
-				x2png, 'nrh_'+freq_tag+'_'+time2file(nrh_times[i], /sec)+'.png'			
+			
+				x2png, 'nrh_'+freq_tag+'_'+time2file(nrh_times[i], /sec)+'_nr_scl.png'			
 			ENDFOR			
 			cd,'..'		
 		ENDFOR
