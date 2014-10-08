@@ -66,7 +66,7 @@ pro nrh_aia_imgs_20140418
   	  
 	  cd,'~/Data/2014_Apr_18/radio/nrh/'
 	  nrh_filenames = findfile('*.fts')
-	  read_nrh, nrh_filenames[n_elements(nrh_filenames)-3], $	; 445 MHz
+	  read_nrh, nrh_filenames[n_elements(nrh_filenames)-1], $	; 445 MHz
 				nrh_hdr, $
 				nrh_data, $
 				hbeg=t0, $ 
@@ -102,7 +102,7 @@ pro nrh_aia_imgs_20140418
 			color=6
 			
 	 
-	 tv, bytscl( congrid(map_nrh_V_neg.data, 402, 402), -1e7, 5e7), channel=1, 0.58, 0.55, /normal		
+	 ;tv, bytscl( congrid(map_nrh_V_neg.data, 402, 402), -1e7, 5e7), channel=1, 0.58, 0.55, /normal		
  ENDFOR
  stop
 
