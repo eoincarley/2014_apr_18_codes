@@ -2,16 +2,22 @@ pro dam_orfees_wavelet
 
 	;Perform wavelet analysis of lightcurve extracted from ORFEES
 	; Light curve taken at 491 MHz. This is in B3.
-
+	!p.charsize = 1.5
+	!p.font = 0
+	xleft = 0.1
+	xright = 0.95
+	window, xs=800, ys=1000
+	
 	cd,'~/Data/2014_apr_18/radio/orfees/'
         null = mrdfits('orf20140418_101743.fts', 0, hdr0)
         fbands = mrdfits('orf20140418_101743.fts', 1, hdr1)
         freqs = [ fbands.FREQ_B1, $
-                        fbands.FREQ_B2, $
-                        fbands.FREQ_B3, $
-                        fbands.FREQ_B4, $
-                        fbands.FREQ_B5  ]
-        nfreqs = n_elements(freqs)
+                  fbands.FREQ_B2, $
+                  fbands.FREQ_B3, $
+                  fbands.FREQ_B4, $
+                  fbands.FREQ_B5  ]
+        
+	nfreqs = n_elements(freqs)
 
         null = mrdfits('orf20140418_101743.fts', 2, hdr_bg, row=0)
         tstart = anytim(file2time('20140418_101743'), /utim)
@@ -45,20 +51,28 @@ pro dam_orfees_wavelet
         tstart = anytim(file2time('20140418_000000'), /utim)
         time_b3 = tstart + data.TIME_B3/1000.0
 	loadct, 0
-	reverse_ct
-	window, 10
+
 	spectro_plot, reverse(transpose(data_array),2), time_b3, reverse(fbands.freq_b3), $
 			/xs, $
-			/ys
-	stop
+			/ys, $
+			ytitle='Frequeny (MHz)', $
+			position = [xleft, 0.71, xright, 0.97], $
+			/normal
+	lin = fltarr(n_elements(time_b3))
+	lin[*] = 491.0
+	set_line_color
+	plots, time_b3, lin, color=3, /data
 	
-	window, 0, xs=1100, ys=500
+	loadct, 0
 	lcurve = 10.0*alog10(lcurve) - 10.0*alog10(bg)
 	utplot, time_b3, lcurve, $
 		/xs, $
 		/ys, $
-		ytitle = 'Intensity (dB)' 
-
+		ytitle = 'Intensity (dB)', $
+		position = [xleft, 0.39, xright, 0.64], $
+		/normal, $
+		/noerase 
+	
 	;--------------------------------------------;
 	;              Wavelet analysis
 	;--------------------------------------------;
@@ -78,17 +92,19 @@ pro dam_orfees_wavelet
 	;--------------------------------------------;
 	;                   Plot wavelet spectrum
 	;--------------------------------------------;
-	window, 2, xs=1100, ys=400
 	loadct,5
 	CONTOUR, abs(wave)^2.0 > (-10) < 7, time_b3 - time_b3[0], period, $
 		/xs, $
-		XTITLE='Time in seconds after HH:MM:SS UT', $
+		XTITLE='Time in seconds after ' + anytim(time_b3[0], /yoh, /time_only, /trun) + ' UT', $ 
 		YTITLE='Period (s)', $ 
 		YRANGE=[MAX(period), MIN(period)], $   ;*** Large-->Small period
 		/YTYPE, $                             ;*** make y-axis logarithmic
 		NLEVELS=25, $
-		/FILL
-	stop
+		/FILL, $
+		position = [xleft, 0.07, xright, 0.32], $
+		/normal, $
+		/noerase
+	
 	wave_y =wave
 	wave_z =wave
 
@@ -105,11 +121,12 @@ pro dam_orfees_wavelet
 	;-----------------------------------------------------;
 	loadct, 0
 	CONTOUR, abs(wave_z)^2.0 >(-10) < 7, time_b3-time_b3[0], period, $
-	YRANGE=[MAX(period), MIN(period)], $   ;*** Large-->Small period
-	/YTYPE, $                              ;*** make y-axis logarithmic
-	NLEVELS=25, $
-	/FILL, $
-	/noerase
+		YRANGE=[MAX(period), MIN(period)], $   ;*** Large-->Small period
+		/YTYPE, $                              ;*** make y-axis logarithmic
+		NLEVELS=25, $
+		/FILL, $
+		/noerase, $
+		position = [xleft, 0.07, xright, 0.32]
 	
 	
 	;-----------------------------;
