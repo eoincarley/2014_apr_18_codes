@@ -147,7 +147,7 @@ pro nrh_gauss_fit
 		tvcircle, (nrh_struc_hdr[i].SOLAR_R), $
 			64.0, 64.0, 254, /data, color=255, thick=1
 		
-		result = my2Dgauss_test( findgen(128), findgen(128), gauss_fit)
+		result = my2Dgauss( findgen(128), findgen(128), gauss_fit)
 		wset, 4
 		loadct, 3
 		plot_image, result,	title=nrh_times[i]
