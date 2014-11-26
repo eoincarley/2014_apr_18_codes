@@ -1,3 +1,36 @@
+function get_mode, img
+
+	array4mode = alog10(img)
+	remove_nans, array4mode, array4mode
+	distfreq = Histogram(array4mode, MIN=Min(array4mode))
+	maxfreq= Max(distfreq)
+	mode = Where(distfreq EQ maxfreq) + Min(array4mode)
+	return, mode
+	
+END	
+
+function my2Dgauss, x, y, pars
+
+	;This is for use in mpfit2dfun below
+
+	z = dblarr(n_elements(x),n_elements(y))
+
+	FOR i = 0, n_elements(x)-1.0 DO BEGIN
+		FOR j=0, n_elements(y)-1.0 DO BEGIN
+			T = pars[6]
+			xp = (x[i]-pars[4])*cos(T) - (y[j]-pars[5])*sin(T)
+			yp = (x[i]-pars[4])*sin(T) - (y[j]-pars[5])*cos(T)
+			U = (xp/pars[2])^2.0 + (yp/pars[3])^2.0
+			z[i,j] = pars[0] + pars[1]*exp(-U/2.0)
+		ENDFOR
+	ENDFOR	
+
+	return, z
+END
+
+;*****************************************;
+;		  Start main procedure
+
 pro nrh_gauss_fit
 
 ;Now uses mpfit2dfun and gauss2dfit...
@@ -12,7 +45,12 @@ pro nrh_gauss_fit
 	cd, '~/Data/2014_apr_18/radio/nrh'
 	files = findfile('*.fts') 
 	tstart = anytim(file2time('20140418_124800'), /yoh, /trun, /time_only)
-	tend   = anytim(file2time('20140418_132158'), /yoh, /trun, /time_only)
+	tend   = anytim(file2time('20140418_125340'), /yoh, /trun, /time_only)
+	
+	;Define the interval where tracking doesn't work and have to do manual tracking
+	t1_interval = anytim(file2time('20140418_124800'),/utim)
+	t2_interval = anytim(file2time('20140418_121000'),/utim)
+	
 	read_nrh, files[n_elements(files)-2], $
 			nrh_hdr, $
 			nrh_data, $
@@ -61,6 +99,13 @@ pro nrh_gauss_fit
 			y = manual_pos[1, i-1]
 		ENDELSE	
 		
+		;IF anytim(nrh_times[i], /utim) gt t1_interval and $
+		;anytim(nrh_times[i], /utim) lt t2_interval THEN BEGIN
+		;	cursor,x,y
+		 ;   manual_pos[0,i] = x
+	    ;	manual_pos[1,i] = y
+		;ENDIF   
+	
 		;-------------------------------------------;
 		; 			Extract image section
 		x1 = x - box
@@ -158,44 +203,15 @@ pro nrh_gauss_fit
 
 	window, 5, xs=800, ys=500, xpos=100, ypos=100 
 	utplot, nrh_times, manual_peak, /xs, psym=1
-	save, manual_pos, manual_peak, gauss_fits, nrh_times, $
-		filename = 'src1_xypeak_432mhz.sav', $
-		description = 'Source 1 at active region center'
-	
+	;save, manual_pos, manual_peak, gauss_fits, nrh_times, $
+	;	filename = 'src1_xypeak_432mhz.sav', $
+	;	description = 'Source 1 (leftmost) at active region center'
+stop	
 	
 END
 
 ; 			End main procedure
 ;***********************************************
 
-function get_mode, img
-
-	array4mode = alog10(img)
-	remove_nans, array4mode, array4mode
-	distfreq = Histogram(array4mode, MIN=Min(array4mode))
-	maxfreq= Max(distfreq)
-	mode = Where(distfreq EQ maxfreq) + Min(array4mode)
-	return, mode
-	
-END	
-
-function my2Dgauss, x, y, pars
-
-	;This is for use in mpfit2dfun above
-
-	z = dblarr(n_elements(x),n_elements(y))
-
-	FOR i = 0, n_elements(x)-1.0 DO BEGIN
-		FOR j=0, n_elements(y)-1.0 DO BEGIN
-			T = pars[6]
-			xp = (x[i]-pars[4])*cos(T) - (y[j]-pars[5])*sin(T)
-			yp = (x[i]-pars[4])*sin(T) - (y[j]-pars[5])*cos(T)
-			U = (xp/pars[2])^2.0 + (yp/pars[3])^2.0
-			z[i,j] = pars[0] + pars[1]*exp(-U/2.0)
-		ENDFOR
-	ENDFOR	
-
-	return, z
-END
 
 
