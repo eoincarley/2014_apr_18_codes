@@ -50,9 +50,9 @@ pro aia_imgs_20140418
 			gcolor=255, $
 			grid_spacing=15.0
 	
-	  x2png, 'aia_'+string(he_aia.wavelnth, format='(I3)')+'A_'$
-	  			+time2file(he_aia.date_obs, /sec)+'_rdiff.png'
-	  
+	  ;x2png, 'aia_'+string(he_aia.wavelnth, format='(I3)')+'A_'$
+	  			;+time2file(he_aia.date_obs, /sec)+'_rdiff.png'
+	  stop
   ENDFOR		
 
 END

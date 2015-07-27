@@ -23,12 +23,15 @@ pro plot_goes, goes, tstart, tend
 
 	utplot, goes[0,*], goes[1,*], $
 		psym=3, $
-		title='1-minute GOES-15 Solar X-ray Flux', $
 		/xs, $
 		yrange=[1e-9, 1e-3], $
 		/ylog, $
 		ytitle = 'Watts m!U-2!N', $
-		xrange = [tstart, tend]
+		xrange = [tstart, tend], $
+		xtitle = ' ', $
+		position=[0.1, 0.77, 0.95, 0.99], $
+		/normal, $
+		XTICKFORMAT="(A1)"
 		
 
 	outplot, goes[0,*], goes[1,*], color=3 ;for some reason utplot won't color the line
@@ -36,11 +39,15 @@ pro plot_goes, goes, tstart, tend
 	axis,yaxis=1,ytickname=[' ','A','B','C','M','X',' ']
 	axis,yaxis=0,yrange=[1e-9,1e-3]
 
-	;plots, goes[0,*], 1e-8
-	;plots, goes[0,*], 1e-7
-	;plots, goes[0,*], 1e-6
-	;plots, goes[0,*], 1e-5
-	;plots, goes[0,*], 1e-4
+  g0 = closest(goes[0,*], tstart)
+  g1 = closest(goes[0,*], tend)
+
+	plots, goes[0, g0:g1], 1e-8, linestyle=1
+	plots, goes[0, g0:g1], 1e-7, linestyle=1
+	plots, goes[0, g0:g1], 1e-6, linestyle=1
+	plots, goes[0, g0:g1], 1e-5, linestyle=1
+	plots, goes[0, g0:g1], 1e-4, linestyle=1
+	
 	outplot, goes[0,*], goes[1,*], color=3
 	outplot, goes[0,*], goes[2,*], color=5
 
@@ -48,9 +55,9 @@ pro plot_goes, goes, tstart, tend
 			linestyle=[0,0], $
 			color=[3,5], $
 			box=0, $
-			pos=[0.1, 0.97],$
+			pos=[0.12, 0.98],$
 			/normal, $
-			charsize=1.5
+			charsize=1.0
 	
 END
 
@@ -59,34 +66,62 @@ pro plot_nrh, tstart, tend
 	restore,'~/Data/2014_apr_18/radio/nrh/src2_xypeak_432mhz.sav', /verb
  	time = anytim(nrh_times, /utim)
  	utplot, time, manual_peak, $
- 		xr = [tstart, tend], $
- 		color=1, $
- 		/ylog, $
- 		ytitle = 'Brightness Temperature', $
- 		yr = [1e6, 2e9]
+      xr = [tstart, tend], $
+      color=8, $
+      /ylog, $
+      ytitle = 'Brightness Temperature', $
+      yr = [1e6, 2e9], $
+		  position=[0.1, 0.08, 0.95, 0.30], $
+		  /ys, $
+		  /normal, $
+		  /noerase
  		
  	restore,'~/Data/2014_apr_18/radio/nrh/src3_xypeak_432mhz.sav', /verb	
  	time = anytim(nrh_times, /utim)
  	outplot, time, manual_peak, $
- 		psym = 4, $
- 		color = 8
+ 		color = 0
  		
  	restore,'~/Data/2014_apr_18/radio/nrh/src1_xypeak_432mhz.sav', /verb	
  	time = anytim(nrh_times, /utim)
  	outplot, time, manual_peak, $
  		psym = 3, $
- 		color = 9	
+ 		color = 5
+ 		
+ 	legend, ['Nancay 432 MHz:', 'Looptop', 'Loop', 'AR Center'], $
+			linestyle=[0, 0, 0, 0], $
+			color=[1, 8, 0, 5], $
+			box=0, $
+			pos=[0.12, 0.29],$
+			/normal, $
+			charsize=1.0	
  		
 END
 
-	
-pro plot_lightcurves
 
-	!p.charsize=3
-	!p.thick=1
-	window, 0, xs=1000, ys=1300
+;************************************************;
+;               Main Procedure
+;	
+pro plot_lightcurves, ps=ps
+
+  !p.charsize=1.0
+  !p.thick=3
+
+  cd,'~/Data/2014_apr_18/radio/'
+  If keyword_set(ps) then begin
+    set_plot,'ps'
+    device, filename='radio_lcs_2014_apr_18.eps', $
+        /encapsulate, $
+        /color, $
+        /inches, $
+        xsize = 9, $
+        ysize = 13
+  endif else begin
+    !p.charsize=1.5
+    !p.thick=1
+    window, 0, xs=1000, ys=1300
+	endelse
 	
-	!p.multi=[0, 1, 4]
+	!p.multi=[0, 1, 1]
 	tstart = anytim(file2time('20140418_122000'), /utim)
 	tend = anytim(file2time('20140418_132000'), /utim)
 	set_line_color
@@ -98,80 +133,138 @@ pro plot_lightcurves
 	
 	;-----------------------;
 	;	    Plot DAM
+	; Light curves for DAM and Orfees produced using 
+	; ~/idl/2014_apr_18_codes/radio_lightcurves.pro
 	restore, '~/Data/2014_apr_18/radio/dam/DAM_lightcurves.sav', /verb
 	utplot, tim, smooth(dam_lc0, 10), $
 			color=4, $
 			/xs, $
 			/ys, $
-			ytitle='Intensity (arbitrary)', $
-			xr=[tstart, tend]
-			
+			ytitle='Intensity', $
+			xr=[tstart, tend], $
+		  xtitle = ' ', $
+		  yr=[100, 360], $
+		  position=[0.1, 0.54, 0.95, 0.76], $
+		  /normal, $
+		  /noerase, $
+		  XTICKFORMAT="(A1)"
+	
 	outplot, tim, smooth(dam_lc1, 10), $
-			color=7	
+			color = 9	
+			
+	legend, ['DAM 30 MHz', 'DAM 60 MHz'], $
+			linestyle=[0, 0], $
+			color=[4, 9], $
+			box=0, $
+			pos=[0.74, 0.75],$
+			/normal, $
+			charsize=1.0		
+			
 			
 	;-----------------------;
 	;	  Plot Orfees
 	restore,'~/Data/2014_apr_18/radio/orfees/ORF_lightcurves.sav', /verb
 	utplot, time_b3, 10.0*alog10(smooth(orf_lc0, 10)), $
-			colour=6, $
+			color=6, $
 			/xs, $
 			yr = [20, 40], $
 			ytitle = 'Intensity (Arbitrary)', $
-			xr=[tstart, tend]
+			xr=[tstart, tend], $
+		  position=[0.1, 0.31, 0.95, 0.53], $
+		  /normal, $
+		  /noerase, $
+		  XTICKFORMAT="(A1)", $
+		  xtit = ' '
+		  
 			
-	outplot, time_b3, 10.0*alog10( smooth(orf_lc2, 10) ), color=2
+	  ;outplot, time_b3, 10.0*alog10( smooth(orf_lc2, 10) ), color=2
 	outplot, time_b3, 10.0*alog10( smooth(orf_lc3, 10) ), color=7
-	outplot, time_b3, 10.0*alog10( smooth(orf_lc4, 10) ), color=8
-	outplot, time_b3, 10.0*alog10( smooth(orf_lc5, 10) ), color=9
-	outplot, time_b3, 10.0*alog10( smooth(orf_lc6, 10) ), color=1
-	
+	  ;outplot, time_b3, 10.0*alog10( smooth(orf_lc4, 10) ), color=8
+	outplot, time_b3, 10.0*alog10( smooth(orf_lc5, 10) ), color=5
+	  ;outplot, time_b3, 10.0*alog10( smooth(orf_lc6, 10) ), color=1
+	  
+	legend, ['Orfees 228 MHz', 'Orfees 327 MHz', 'Orfees 432 MHz'], $
+			linestyle=[0, 0, 0], $
+			color=[6, 7, 5], $
+			box=0, $
+			pos=[0.70, 0.52],$
+			/normal, $
+			charsize=1.0
+			
 	;-----------------------;
 	;	   Plot NRH
 	plot_nrh, tstart, tend
- 		
+	
+  if keyword_set(ps) then begin
+    device, /close
+    set_plot, 'x'
+  endif
+	
+
 ;****************	
+
+
+  cd,'~/Data/2014_apr_18/radio/'
+  
+  !p.charsize=1.5
+  If keyword_set(ps) then begin
+    set_plot,'ps'
+    device, filename='radio_lcs2_2014_apr_18.eps', $
+        /encapsulate, $
+        /color, $
+        /inches, $
+        xsize = 13, $
+        ysize = 6
+  endif else begin
+    !p.charsize=1.5
+    window, 1, xs=1700, ys=500
+	endelse
+
  	;-------------------------------------------------;
- 	;		Compare Orfees and NRH
+ 	;		          Compare Orfees and NRH
  	;	
- 	window, 1, xs=1700, ys=500
- 	!p.multi = [0, 1, 1]
- 	!p.charsize = 1.5
  	tstart = anytim(file2time('20140418_124000'), /utim)
 	tend = anytim(file2time('20140418_132000'), /utim)
  	
+
  	orf = alog10( orf_lc5 )/max(alog10( orf_lc5 ) )
  	utplot, time_b3, orf, $
  		color=3, $
  		yr = [0.6, 1], $
  		ytitle = 'Normalised Intensity', $
  		/xs, $
- 		xr = [tstart, tend]
+ 		xr = [tstart, tend], $
+ 		xthick=5, $
+ 		ythick=5, $
+ 		charthick=5
+ 		
  		
  	restore,'~/Data/2014_apr_18/radio/nrh/src2_xypeak_432mhz.sav', /verb
  	time = anytim(nrh_times, /utim)
  	outplot, time, alog10(manual_peak)/max(alog10(manual_peak)), $
- 			color=4
+ 			color=5
  		
  	restore,'~/Data/2014_apr_18/radio/nrh/src3_xypeak_432mhz.sav', /verb	
  	time = anytim(nrh_times, /utim)
  	outplot, time, alog10(manual_peak)/max(alog10(manual_peak)), $
- 		color = 1
+ 		color = 0
  		
  	restore,'~/Data/2014_apr_18/radio/nrh/src1_xypeak_432mhz.sav', /verb	
  	time = anytim(nrh_times, /utim)
  	outplot, time, alog10(manual_peak)/max(alog10(manual_peak)), $
- 		psym = 3, $
- 		color = 7	 	
+ 		color = 4	 	
  		
  	legend, ['NRH 432 MHz (Looptop source)', 'NRH 432 MHz (Loop source)', 'NRH 432 MHz (AR center)', 'Orfees 432 MHz (Precursor)'], $
 			linestyle=[0, 0, 0, 0], $
-			color=[4, 1, 7, 3], $
+			color=[5, 0, 4, 3], $
 			box=0, $
 			/right, $
 			/normal, $
 			charsize=1.5	
- 	stop	
-
+ 	if keyword_set(ps) then begin
+    device, /close
+    set_plot, 'x'
+  endif
 END
 
 

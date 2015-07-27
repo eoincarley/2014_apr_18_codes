@@ -12,42 +12,58 @@ pro plot_spec, data, time, freqs, frange, bg, scl0=scl0, scl1=scl1
   ;data = constbacksub(data, /auto)
   data = data/max(data)
   data = reverse(data, 2)
-  wset,0
+  ea = string(233B)
+  ;wset,0
   spectro_plot, (data > (scl0) < scl1), $
   				time, $
   				reverse(freqs), $
   				/xs, $
   				/ys, $
   				/ylog, $
-  				ytitle='Frequency (MHz)', $
-  				title = 'Orfees and DAM', $
+  				ytitle=' ', $
   				yr=[ frange[0], frange[1] ], $
-  				xrange = '2014-Apr-18 '+['12:40:00', '13:20:00'], $
+  				xrange = '2014-Apr-18 '+['12:40:00', '13:22:00'], $
+  				xtitle = ' ', $
   				/noerase, $
-  				position = [0.1, 0.1, 0.95, 0.95]
+  				position = [0.1, 0.1, 0.95, 0.95], $
+  				xticklen = -0.01, $
+  				yticklen = -0.01
+  				
 		
-		set_line_color	
-  	hline, 432.0, /data, color=3
-  	loadct, 0
-  	reverse_ct
   	
 END
 
+pro setup_ps, name
+  
+  set_plot,'ps'
+  !p.charsize=1.5
+  device, filename = name, $
+          /color, $
+          /inches, $
+          bits_per_pixel = 16, $
+          xsize=11, $
+          ysize=11, $
+          /encapsulate, $
+          yoffset=5
 
-pro dam_orfees_plot
+end
+
+pro jazzy_dam_orfees_plot
+
+  ; Jazzing up dam_orfees_plot for the solar group promo catalogue
 
 	;------------------------------------;
 	;			    Window params
 	loadct, 0
 	reverse_ct
-	window, xs=1100, ys=700, retain=2
-	!p.charsize=1.5
-	!p.thick=1
-	!x.thick=1
-	!y.thick=1
+	;window, xs=1100, ys=700, retain=2
+	!p.charsize=0.2
+	!p.thick = 0.5
+	!x.thick = 0.5
+	!y.thick = 0.5
 
 	time0='20140418_124000'
-	time1='20140418_132000'
+	time1='20140418_132200'
 
 	;***********************************;
 	;			      Plot DAM		
@@ -124,18 +140,26 @@ pro dam_orfees_plot
 	
 	freq0 = 8
 	freq1 = 1000
-	;-----------------------------------------------------;
+	;-----------------------------------------;
 	;						STOKESI B1
+	setup_ps, 'jazzy_plot_dam_orfees_aia.eps'
 	plot_spec, data.STOKESI_B1, time_b1, fbands.FREQ_B1, [freq0, freq1], average(bg.stokesi_b1, 2), scl0=-0.2, scl1=0.9
-	plot_spec, data.STOKESI_B2, time_b2, fbands.FREQ_B2, [freq0, freq1], average(bg.stokesi_b2, 2), scl0=-0.2, scl1=0.9
-	plot_spec, data.STOKESI_B3, time_b3, fbands.FREQ_B3, [freq0, freq1], average(bg.stokesi_b3, 2), scl0=-0.2, scl1=0.9
-	plot_spec, data.STOKESI_B4, time_b4, fbands.FREQ_B4, [freq0, freq1], average(bg.stokesi_b4, 2), scl0=-0.2, scl1=0.9
-	plot_spec, data.STOKESI_B5, time_b5, fbands.FREQ_B5, [freq0, freq1], average(bg.stokesi_b5, 2), scl0=-0.2, scl1=0.4
 	
-	dam_spec = reverse(transpose(dam_spec))
-	plot_spec, dam_spec, dam_tim, reverse(freq), [freq0, freq1], average(dam_spec, 2), scl0=(-0.3), scl1=0.8
+	loadct, 74
+  reverse_ct
 	
-;	x2png,'dam_orfees_burst_20140418.png'
+	plot_spec, data.STOKESI_B1, time_b1, fbands.FREQ_B1, [freq0, freq1], average(bg.stokesi_b1, 2), scl0=-0.0, scl1=0.9 ; Lowest frequency
+	plot_spec, data.STOKESI_B2, time_b2, fbands.FREQ_B2, [freq0, freq1], average(bg.stokesi_b2, 2), scl0=-0.0, scl1=0.8
+	plot_spec, data.STOKESI_B3, time_b3, fbands.FREQ_B3, [freq0, freq1], average(bg.stokesi_b3, 2), scl0=-0.0, scl1=1.5
+	plot_spec, data.STOKESI_B4, time_b4, fbands.FREQ_B4, [freq0, freq1], average(bg.stokesi_b4, 2), scl0=-0.0, scl1=0.8
+	plot_spec, data.STOKESI_B5, time_b5, fbands.FREQ_B5, [freq0, freq1], average(bg.stokesi_b5, 2), scl0=-0.0, scl1=0.3
 	
-stop
+	dam_spec = smooth(reverse(transpose(dam_spec)), 2)
+	plot_spec, dam_spec, dam_tim, reverse(freq), [freq0, freq1], average(dam_spec, 2), scl0=(-0.20), scl1=0.7
+	
+	device, /close
+  set_plot, 'x'
+  
+	
+
 END

@@ -36,10 +36,12 @@ pro radio_lightcurves
 	dam_freqs = [ freq[i0], freq[i1] ]
 	dam_lc0 = spectro[*,i0]
 	dam_lc1 = spectro[*,i1]
+	stop
+	
 	save, dam_lc0, dam_lc1, tim, freqs, $
 		filename='DAM_lightcurves.sav'
-	utplot, tim, smooth(spectro[*,i0]/max(spectro[*,i0]), 5)
-	outplot, tim, smooth(spectro[*, i1]/max(spectro[*,i0]), 5)
+	utplot, tim, smooth( spectro[*,i0]/max(spectro[*,i0]), 5 )
+	outplot, tim, smooth( spectro[*, i1]/max(spectro[*,i0]), 5 )
 	
 	;-----------------------------------------------;
 	;				Orfees
@@ -52,7 +54,7 @@ pro radio_lightcurves
 	;--------------------------------------------------;
     ;               Choose time range
 	time0='20140418_122200'
-	time1='20140418_131600'
+	time1='20140418_133000'
 	t0 = anytim(file2time(time0), /utim)
 	t1 = anytim(file2time(time1), /utim)
 	inc0 = (t0 - tstart)*10.0 ;Sampling time is 0.1 seconds

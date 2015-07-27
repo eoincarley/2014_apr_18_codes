@@ -20,37 +20,108 @@ pro plot_spec, data, time, freqs, frange, bg, scl0=scl0, scl1=scl1
   				/ys, $
   				/ylog, $
   				ytitle='Frequency (MHz)', $
-  				title = 'Orfees and DAM', $
   				yr=[ frange[0], frange[1] ], $
-  				xrange = '2014-Apr-18 '+['12:40:00', '13:20:00'], $
+  				xrange = '2014-Apr-18 '+['12:15:00', '13:15:00'], $
   				/noerase, $
-  				position = [0.1, 0.1, 0.95, 0.95]
+  				position = [0.1, 0.1, 0.95, 0.75], $
+  				xtitle='Start time: 2014-Apr-18 12:15:00 UT'
+			
+  					
+END
+
+;******************************
+;				Plot GOES
+
+pro plot_goes, t1, t2
+
+		x1 = anytim(file2time(t1), /utim)
+		x2 = anytim(file2time(t2), /utim)
 		
-		set_line_color	
-  	hline, 432.0, /data, color=3
-  	loadct, 0
-  	reverse_ct
-  	
+		;--------------------------------;
+		;			 Xray
+		file = findfile('~/Data/2014_apr_18/goes/20140418_Gp_xr_1m.txt')
+		goes = read_goes_txt(file[0])
+	
+		set_line_color
+		utplot, goes[0,*], goes[1,*], $
+				thick = 1, $
+				tit = '1-minute GOES-15 Solar X-ray Flux', $
+				ytit = 'Watts m!U-2!N', $
+				xtit = ' ', $
+				color = 3, $
+				xrange = [x1, x2], $
+				/xs, $
+				yrange = [1e-9,1e-3], $
+				/ylog, $
+				position = [0.1, 0.75, 0.95, 0.99], $
+				/normal, $
+				/noerase
+				
+		outplot, goes[0,*], goes[2,*], color=5	
+		
+		axis, yaxis=1, ytickname=[' ','A','B','C','M','X',' ']
+		axis, yaxis=0, yrange=[1e-9, 1e-3]
+		
+		i1 =  closest(goes[0,*], x1)
+		i2 = closest(goes[0,*], x2)
+		plots, goes[0, i1:i2], 1e-8
+		plots, goes[0, i1:i2], 1e-7
+		plots, goes[0, i1:i2], 1e-6
+		plots, goes[0, i1:i2], 1e-5
+		plots, goes[0, i1:i2], 1e-4
+				
+		legend, ['GOES15 0.1-0.8nm','GOES15 0.05-0.4nm'], $
+				linestyle=[0,0], $
+				color=[3,5], $
+				box=0
+
 END
 
 
-pro dam_orfees_plot
+function read_goes_txt, file
+
+	readcol, file, y, m, d, hhmm, mjd, sod, short_channel, long_channel
+	
+	;-------- Time in correct format --------
+	time  = strarr(n_elements(y))
+	
+	time[*] = string(y[*], format='(I04)') + string(m[*], format='(I02)') $
+	  + string(d[*], format='(I02)') + '_' + string(hhmm[*], format='(I04)')
+	    
+	time = anytim(file2time(time), /utim) 
+	
+	;------- Build data array --------------
+
+	goes_array = dblarr(3, n_elements(y))
+	goes_array[0,*] = time
+	goes_array[1,*] = long_channel
+	goes_array[2,*] = short_channel
+	return, goes_array
+
+END
+
+;********************
+
+
+
+pro goes_dam_orfees
 
 	;------------------------------------;
-	;			    Window params
+	;			Window params
 	loadct, 0
 	reverse_ct
-	window, xs=1100, ys=700, retain=2
+	window, xs=900, ys=700, retain=2
 	!p.charsize=1.5
-	!p.thick=1
-	!x.thick=1
-	!y.thick=1
 
-	time0='20140418_124000'
-	time1='20140418_132000'
+	time0='20140418_121500'
+	time1='20140418_131500'
+
+	plot_goes, time0, time1
+	loadct, 0
+	reverse_ct
 
 	;***********************************;
-	;			      Plot DAM		
+	;			Read DAM		
 	;***********************************;
 	cd,'~/Data/2014_apr_18/radio/dam/'
 	restore, 'NDA_20140418_1221_left.sav', /verb
@@ -137,5 +208,6 @@ pro dam_orfees_plot
 	
 ;	x2png,'dam_orfees_burst_20140418.png'
 	
-stop
+
 END
+

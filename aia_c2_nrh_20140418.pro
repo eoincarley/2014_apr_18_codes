@@ -72,22 +72,10 @@ pro aia_c2_nrh_20140418
 		map_aia, $
 		outsize = 1024		
 
-	  ;redu_factor = he_aia_pre.naxis1/(size(map_aia_pre.data))[1]*1d
-	  ;he_aia_pre.naxis1 = (size(map_aia_pre.data))[1]
-	  ;he_aia_pre.naxis2 = (size(map_aia_pre.data))[1]
-	  ;he_aia_pre.cdelt1 = he_aia_pre.cdelt1*redu_factor
-	  ;he_aia_pre.cdelt2 = he_aia_pre.cdelt2*redu_factor
-	  ;he_aia_pre.crpix1 = he_aia_pre.crpix1/redu_factor
-	  ;he_aia_pre.crpix2 = he_aia_pre.crpix2/redu_factor	
-	  
-	  ;read_sdo, f[i], $
-		;	he_aia, $
-		;	data_aia
-	  
-	  ;index2map, he_aia, $
-	;		smooth(data_aia, smoothing)/he_aia.exptime, $
-;			map_aia, $
-;			outsize = 2048
+    ; To Carolina. The following few lines re-define the arcseconds per pixel etc. because
+    ; I have reduced AIA image size from 4096 to 1024 (see index2map outsize above). this is the
+    ; only tricky part e.g., if re-sizing image arrays, make sure the cdelt and crpix in the mreadfits_header
+    ; file is still correct.
 	  	
 	  redu_factor = hdr_aia.naxis1/(size(map_aia.data))[1]*1d
 	  hdr_aia.naxis1 = (size(map_aia.data))[1]
@@ -116,13 +104,15 @@ pro aia_c2_nrh_20140418
   		gthick=1, $
   		gcolor=1, $
   		grid_spacing=15
+
+  stop    
   		
   ;--------------------------------------;
   ;---------------NRH Data---------------;
   ;--------------------------------------;		
   cd,'~/Data/2014_Apr_18/radio/nrh/'
-  tstart = anytim(hdr_aia.date_obs, /utim) - 10.0*60.0 
-  tend = anytim(file2time('20140418_132154'), /utim)  
+  tstart = anytim(hdr_aia.date_obs, /utim) - 2.0*60.0 
+  tend = anytim(hdr_aia.date_obs, /utim)  + 2.0*60.0 
   t0 = anytim(tstart, /yoh, /trun, /time_only)
   t1   = anytim(tend, /yoh, /trun, /time_only)
   
@@ -132,7 +122,9 @@ pro aia_c2_nrh_20140418
 			nrh_data, $
 			hbeg=t0, $ 
 			hend=t1	
-						
+					
+
+  stop        	
   index2map, nrh_hdr, nrh_data, $
 			 nrh_map  
   
@@ -156,14 +148,14 @@ pro aia_c2_nrh_20140418
   ;			Overlay NRH contours
   set_line_color
   plot_map, nrh_map[nrh_index], $
-		/overlay, $
-		/cont, $
-		levels=levels, $
-		/noxticks, $
-		/noyticks, $
-		/noaxes, $
-		thick=1.0, $
-		color=4		
+  		/overlay, $
+  		/cont, $
+  		levels=levels, $
+  		/noxticks, $
+  		/noyticks, $
+  		/noaxes, $
+  		thick=1.0, $
+  		color=4		
 
   freq_tag = string(nrh_hdr[0].freq, format='(I03)')
   wave_tag = string(hdr_aia.WAVELNTH, format='(I03)')

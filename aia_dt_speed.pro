@@ -34,7 +34,6 @@ pro aia_dt_speed, ps=ps
 	cd, '~/Data/2014_Apr_18/sdo/171A'
 	restore,'aia_171A_dt_points.sav', /verb
 	set_line_color
-	
 	tim171 = tim
 	utplot, tim, dis, $
 			title = 'Points from dt map', $
@@ -69,7 +68,7 @@ pro aia_dt_speed, ps=ps
 	;	
 	cd, '~/Data/2014_Apr_18/sdo/193A'
 	restore,'aia_193A_dt_points.sav', /verb
-	
+
 	tim193 = tim
 	outplot, tim, dis, $
 			color = 4, $
@@ -101,6 +100,8 @@ pro aia_dt_speed, ps=ps
 	;	
 	cd, '~/Data/2014_Apr_18/sdo/211A'
 	restore,'aia_211A_dt_points.sav', /verb
+
+
 	tim211 = tim
 	outplot, tim, dis, $
 			color = 6, $
@@ -152,9 +153,17 @@ pro aia_dt_speed, ps=ps
 			
 	outplot, tim211[0]+tim_sim, vel_211, $
 			color = 6		
-			
-	
-	legend, ['171A', '193A', '211A'], $
+	accel_171 = (deriv(tim_sim, vel_171)*1e3)[0] ; m/s/s
+	accel_193 = (deriv(tim_sim, vel_193)*1e3)[0] ; m/s/s
+	accel_211 = (deriv(tim_sim, vel_211)*1e3)[0] ; m/s/s
+
+	print, accel_171
+	print, accel_193
+	print, accel_211
+
+	legend, ['171A accel: ' + string(accel_171, format='(I03)')+' m s!U-2!N', $
+		 '193A accel: ' + string(accel_193, format='(I03)')+' m s!U-2!N', $
+	       	 '211A accel: ' + string(accel_211, format='(I03)')+' m s!U-2!N'], $
 			color=[5, 4, 6], $
 			linestyle = 0, $
 			box=0, $
