@@ -1,12 +1,12 @@
-pro dam_orfees_wavelet, plot_ps = plot_ps
+pro dam_orfees_wavelet, frequency, plot_ps = plot_ps
 
 	; Perform wavelet analysis of lightcurve extracted from ORFEES
-	; Light curve taken at 491 MHz. This is in B3.
+	; Light curve taken at 'frequency' MHz. 
 
 	cd,'~/Data/2014_apr_18/radio/'
 	!p.charsize = 0.8
 	!p.font = 0
-	xleft = 0.1
+	xleft = 0.05
 	xright = 0.95
 	if keyword_set(plot_ps) THEN BEGIN
 		set_plot, 'ps'
@@ -19,62 +19,63 @@ pro dam_orfees_wavelet, plot_ps = plot_ps
 			bits_per_pixel=32, $
 			/helvetica
 	ENDIF ELSE BEGIN
-		window, xs=800, ys=1000
+		window, 1, xs=2500, ys=1000
 	ENDELSE
 	
 	
-	cd,'orfees'
-        null = mrdfits('orf20140418_101743.fts', 0, hdr0)
-        fbands = mrdfits('orf20140418_101743.fts', 1, hdr1)
-        null = mrdfits('orf20140418_101743.fts', 2, hdr_bg, row=0)
-        tstart = anytim(file2time('20140418_101743'), /utim)
+	cd, 'orfees'
+    null = mrdfits('orf20140418_101743.fts', 0, hdr0)
+    fbands = mrdfits('orf20140418_101743.fts', 1, hdr1)
+    null = mrdfits('orf20140418_101743.fts', 2, hdr_bg, row=0)
+    tstart = anytim(file2time('20140418_101743'), /utim)
 
 	;--------------------------------------------------;
-        ;               Choose time range
-	time0='20140418_125240'
-        time1='20140418_125330'
-        t0 = anytim(file2time(time0), /utim)
-        t1 = anytim(file2time(time1), /utim)
-        inc0 = (t0 - tstart)*10.0 ;Sampling time is 0.1 seconds
-        inc1 = (t1 - tstart)*10.0 ;Sampling time is 0.1 seconds
-        range = [inc0, inc1]
-        data = mrdfits('orf20140418_101743.fts', 2, hdr2, range = range)
-	data_array = data.STOKESI_B3
-	index = closest(fbands.freq_B3, 491.0)
+    ;               Choose time range
+	time0='20140418_125500'
+    time1='20140418_125700'
+    t0 = anytim(file2time(time0), /utim)
+    t1 = anytim(file2time(time1), /utim)
+    inc0 = (t0 - tstart)*10.0 ;Sampling time is 0.1 seconds
+    inc1 = (t1 - tstart)*10.0 ;Sampling time is 0.1 seconds
+    range = [inc0, inc1]
+    data = mrdfits('orf20140418_101743.fts', 2, hdr2, range = range)
+	
+	data_array = data.STOKESI_B1
+	freq_array = fbands.freq_B1
+	tstart = anytim(file2time('20140418_000000'), /utim)
+    time_array = tstart + data.TIME_B1/1000.0
+
+	index = closest(freq_array, frequency)
 	lcurve = data_array[index, *]
 
-        ;--------------------------------------------------;
-        ;         Choose time range for background
-        tbg0 = anytim(file2time('20140418_123000'), /utim)
-        tbg1 = anytim(file2time('20140418_123100'), /utim)
-        incbg0 = (tbg0 - tstart)*10.0 ;Sampling time is 0.1 seconds
-        incbg1 = (tbg1 - tstart)*10.0 ;Sampling time is 0.1 seconds
-        bg = mrdfits('orf20140418_101743.fts', 2, hdr2, range = [incbg0, incbg1])
-	bg = bg.STOKESI_B3
+    ;--------------------------------------------------;
+    ;         Choose time range for background
+    tbg0 = anytim(file2time('20140418_123000'), /utim)
+    tbg1 = anytim(file2time('20140418_123100'), /utim)
+    incbg0 = (tbg0 - tstart)*10.0 ;Sampling time is 0.1 seconds
+    incbg1 = (tbg1 - tstart)*10.0 ;Sampling time is 0.1 seconds
+    bg = mrdfits('orf20140418_101743.fts', 2, hdr2, range = [incbg0, incbg1])
+	bg = bg.STOKESI_B1
 	bg = mean(bg[index, *])
-
-        tstart = anytim(file2time('20140418_000000'), /utim)
-        time_b3 = tstart + data.TIME_B3/1000.0
 	
 	;--------------------;
 	; Spectrogram plot is last thing in the code because the reverse colour chart was messing 
 	; every other plot up. The colour charts in this code have been a serious pain in the arse.
-	
 	; Light curve plot	
-	loadct, 0	
+	loadct, 74	
 	lcurve = 10.0*alog10(lcurve) - 10.0*alog10(bg)
-	utplot, time_b3, lcurve, $
+	utplot, time_array, lcurve, $
 		/xs, $
 		/ys, $
 		ytitle = 'Intensity (dB)', $
 		position = [xleft, 0.39, xright, 0.64], $
 		/normal, $
 		/noerase, $ 
-		title = '491 MHz intensity from Orfees spectrogram'	
+		title = string(frequency, format='(I3)')+' MHz intensity from Orfees spectrogram'	
 	;--------------------------------------------;
 	;              Wavelet analysis
 	;--------------------------------------------;
-	dt = time_b3[1]  - time_b3[0]
+	dt = time_array[1]  - time_array[0]
 	lcurve = transpose(lcurve)
 	wave = wavelet(lcurve, $
 			dt, $
@@ -95,9 +96,10 @@ pro dam_orfees_wavelet, plot_ps = plot_ps
 	; what the issue was.	
 	loadct, 5
 	stretch, 50.0, 255.0	
-	CONTOUR, abs(wave)^2.0 + 3.9 > 3.0 < 10.0, time_b3 - time_b3[0], period, $
+	CONTOUR, abs(wave)^2.0 > (-1.0) < 10.0, time_array - time_array[0], period, $
 		/xs, $
-		XTITLE='Time in seconds after ' + anytim(time_b3[0], /yoh, /time_only, /trun) + ' UT', $ 
+		/ys, $
+		XTITLE='Time in seconds after ' + anytim(time_array[0], /yoh, /time_only, /trun) + ' UT', $ 
 		YTITLE='Period (s)', $ 
 		YRANGE=[MAX(period), MIN(period)], $   ;*** Large-->Small period
 		/YTYPE, $                              ;*** make y-axis logarithmic
@@ -121,14 +123,16 @@ pro dam_orfees_wavelet, plot_ps = plot_ps
         	ENDIF
 	ENDFOR
 
-	;-----------------------------------------------------;
-	;       Plot regions outside the cone of influence in grey
-	;-----------------------------------------------------;
+	;----------------------------------------------------------;
+	;     Plot regions outside the cone of influence in grey
+	;----------------------------------------------------------;
 	loadct, 0
-	CONTOUR, abs(wave_z)^2.0 >(-10) < 7, time_b3-time_b3[0], period, $
+	CONTOUR, abs(wave_z)^2.0 >(-10) < 7, time_array-time_array[0], period, $
 		YRANGE=[MAX(period), MIN(period)], $   ;*** Large-->Small period
 		/YTYPE, $                              ;*** make y-axis logarithmic
 		NLEVELS=25, $
+		/xs, $
+		/ys, $
 		/FILL, $
 		/noerase, $
 		position = [xleft, 0.07, xright, 0.32], $	
@@ -136,35 +140,34 @@ pro dam_orfees_wavelet, plot_ps = plot_ps
 		yticklen = -0.01
 		
 	
-	;-----------------------------;
-	;   Plot significance levels;
-	;-----------------------------;
-	ntime = n_elements(time_b3)
+	;-------------------------------;
+	;   Plot significance levels	;
+	;-------------------------------;
+	ntime = n_elements(time_array)
 	nscale = N_ELEMENTS(period)
 	signif = WAVE_SIGNIF(lcurve, dt, scale)
 	signif = REBIN(TRANSPOSE(signif), ntime, nscale)
-        ;signif = REBIN(TRANSPOSE(signif), ntime, nscale)
+    ;signif = REBIN(TRANSPOSE(signif), ntime, nscale)
 
-       	set_line_color
-	CONTOUR, abs(wave)^2.0/signif, time_b3 - time_b3[0], $
+    set_line_color
+	CONTOUR, abs(wave)^2.0/signif, time_array - time_array0], $
 		period, $
-      		/OVERPLOT, $
+      	/OVERPLOT, $
 		LEVEL=1.0, $
 		C_ANNOT='95%', $
-		color=4
+		color=4, $
+		position = [xleft, 0.07, xright, 0.32]
 
-	PLOTS, time_b3-time_b3[0], coi, $
+	PLOTS, time_array-time_array[0], coi, $
 		NOCLIP=0 , $
 		thick=3, $
 		color=4
 
-	;Orfees plotted here because the reverse ct was messing uo the rest of the plots
+	;Orfees plotted here because the reverse ct was messing up the rest of the plots
 	
-	loadct, 0
-	!p.color=255
-	!p.background=0
-	reverse_ct
-	spectro_plot, reverse(transpose(data_array),2), time_b3, reverse(fbands.freq_b3), $
+	loadct, 74
+	data_array = transpose(reverse(data_array))
+	spectro_plot, data_array, time_array, reverse(freq_array), $
 			/xs, $
 			/ys, $
 			ytitle='Frequeny (MHz)', $
@@ -174,10 +177,10 @@ pro dam_orfees_wavelet, plot_ps = plot_ps
 			title='Orfees spectrogram'	
 			
 	set_line_color	
-	lin = fltarr(n_elements(time_b3))
-	lin[*] = 491.0
+	lin = fltarr(n_elements(time_array))
+	lin[*] = 209.0
 	set_line_color
-	plots, time_b3, lin, color=3, /data
+	plots, time_array, lin, color=3, /data
 
 	IF keyword_set(plot_ps) THEN BEGIN
 		device, /close
