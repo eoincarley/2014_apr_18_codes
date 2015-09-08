@@ -1,4 +1,4 @@
-pro aia_dt_plot, ps=ps, choose_points=choose_points
+pro aia_dt_plot_20140418, ps=ps, choose_points=choose_points
 
 	;Code to plot the distance time maps of from AIA
 	!p.font = 0
@@ -17,12 +17,12 @@ pro aia_dt_plot, ps=ps, choose_points=choose_points
 				xs=4, $
 				ys=10
 	endif else begin
-		window, 0, xs=400, ys=1000
+		window, 0, xs=400, ys=400
 	endelse
 	
 	xposl = 0.15
 	xposr = 0.9
-	tstart = '12:37:00'
+	tstart = '12:30:00'
 	tend = '12:56:00'
 	
 	;------------------------------------------------;
@@ -31,7 +31,7 @@ pro aia_dt_plot, ps=ps, choose_points=choose_points
 	cd, '~/Data/2014_Apr_18/sdo/dist_time/'
 	restore, 'aia_171_dt_map_020.sav', /verbose
 	distt = dt_map_struct.dtmap
-	tar = dt_map_struct.time
+	tarr = dt_map_struct.time
 	lindMm = dt_map_struct.distance	
 
 	loadct, 1
@@ -42,7 +42,7 @@ pro aia_dt_plot, ps=ps, choose_points=choose_points
 	  				xtitle='Start time: '+'2014-Apr-18 '+tstart+' UT', $
 	  				title = 'AIA 171A', $
 	  				xrange='2014-apr-18 ' + [tstart, tend], $
-	  				position = [xposl, 0.71, xposr, 0.97], $
+	  				;position = [xposl, 0.71, xposr, 0.97], $
 	  				/normal
 	  				
 	if keyword_set(choose_points) then begin
