@@ -28,6 +28,33 @@ pro aia_dt_plot, ps=ps, choose_points=choose_points
 	;------------------------------------------------;
 	;				Plot 171
 	;
+	cd, '~/Data/2014_Apr_18/sdo/dist_time/131A'
+	restore, 'aia_171A_dtmap.sav', /verbose
+	distt = dt_map_struct.dtmap
+	tar = dt_map_struct.time
+	lindMm = dt_map_struct.distance	
+
+	loadct, 1
+	spectro_plot, distt > (-25) < 25, tarr, lindMm, $
+	  				/xs, $
+	  				/ys, $
+	  				ytitle = 'Distance (Mm)', $
+	  				xtitle='Start time: '+'2014-Apr-18 '+tstart+' UT', $
+	  				title = 'AIA 171A', $
+	  				xrange='2014-apr-18 ' + [tstart, tend], $
+	  				position = [xposl, 0.71, xposr, 0.97], $
+	  				/normal
+	  				
+	if keyword_set(choose_points) then begin
+		point, tim, dis
+		save, tim, dis, filenam='aia_171A_dt_points.sav'
+	endif
+
+	stop
+
+	;------------------------------------------------;
+	;				Plot 171
+	;
 	cd, '~/Data/2014_Apr_18/sdo/171A'
 	restore, 'aia_171A_dtmap.sav', /verbose
 	
