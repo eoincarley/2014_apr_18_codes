@@ -3,6 +3,7 @@ pro typeii_speed, ps = ps
 	!p.font = 0
 	!p.charsize = 0.8
 	!p.charthick = 0.5
+	loadct, 0
 	cd, '~/Data/2014_Apr_18/radio/'
 	
 	if keyword_set(ps) then begin
@@ -23,12 +24,11 @@ pro typeii_speed, ps = ps
 	xposr = 0.9
 
 	cd,'~/Data/2014_Apr_18/radio/orfees'
-	restore,'ft_dam_orfees_20140418.sav', /verb
-	
+	restore, 'typeII_ft_2.sav', /verb;'ft_dam_orfees_20140418.sav', /verb
 	;---------------------------------;
 	;		Plot frequency time
 	;
-	utplot, ft[0,*], ft[1,*], $
+	utplot, t, f, $
 			/ylog, $
 			ytitle = 'Frequency (MHz)', $
 			title = 'Frequency-time points for 2014-Apr-18 type II', $
@@ -39,8 +39,8 @@ pro typeii_speed, ps = ps
 	;---------------------------------;
 	;		Plot density time
 	;
-	n_e = freq2dens((ft[1,*]*1e6)/2.0)
-	utplot, ft[0, *], n_e, $
+	n_e = freq2dens((f*1e6)/2.0)
+	utplot, t, n_e, $
 			title='Electron desnity, assuming 2nd harmonic', $
 			/ylog, $
 			ytitle = 'Electron number density (cm!U-3!N)', $
@@ -51,11 +51,12 @@ pro typeii_speed, ps = ps
 	;-------------------------------------------;
 	;		Plot heliocentric distance-time
 	;
-	hd = density_to_radius(n_e)		
-	utplot, ft[0, *], hd , $
+	hd = density_to_radius(n_e, model='saito', fold=5)		
+	utplot, t, hd , $
 			title='Heliocen. dist., 5xSaito QS model', $
 			ytitle = 'Heliocentric distance of radio burst (Rsun)', $
-			yr = [1, 3.0], $
+		;	yr = [1, 1.3], $
+			/ys, $
 			psym=4, $
 	  		position = [xposl, 0.05, xposr, 0.30], $
 	  		/noerase
@@ -64,7 +65,7 @@ pro typeii_speed, ps = ps
 	;--------------------------------------;
 	;			Linear fit
 	;
-	tim_sec = ft[0, *]  - ft[0,0]
+	tim_sec = t[*]  - t[0]
 	result = linfit(tim_sec, hd, yfit=yfit)
 	speed = result[1]*6.695e5  ; km/s
 	
@@ -74,7 +75,7 @@ pro typeii_speed, ps = ps
 	print,'--------------------------------------'
 	tim_sim = (dindgen(100)*(30.0*60.0 - (-10.0*60.0) )/99.0 ) -10.0*60.0
 	hd_sim = result[0] + result[1]*tim_sim
-	outplot, ft[0, 0] + tim_sim, hd_sim, linestyle=1
+	outplot, t[0] + tim_sim, hd_sim, linestyle=1
 	
 	;--------------------------------------;
 	;			Non-linear fit fit
@@ -87,7 +88,7 @@ pro typeii_speed, ps = ps
 	set_line_color
 	tim_sim = (dindgen(100)*(30.0*60.0 - (-10.0*60.0) )/99.0 ) -10.0*60.0
 	hd_sim = p[0]*tim_sim^2.0 + p[1]*tim_sim + p[2]
-	outplot, ft[0,0] + tim_sim, hd_sim, color=5, thick=4
+	outplot, t[0] + tim_sim, hd_sim, color=5, thick=4
 	
 	speed = p[1]*6.695e5		; km/s 
 	accel = p[0]*6.695e8		; m/s/s
@@ -113,5 +114,7 @@ pro typeii_speed, ps = ps
 		device, /close
 		set_plot,'x'
 	endif
+
+	stop
 		
 END

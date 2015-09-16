@@ -102,7 +102,7 @@ pro nrh_aia_imgs_20140418
 			color=6
 			
 	 
-	 ;tv, bytscl( congrid(map_nrh_V_neg.data, 402, 402), -1e7, 5e7), channel=1, 0.58, 0.55, /normal		
+	 ;tv, bytscl( congrid(nrh_map[nrh_index].data, 402, 402), 5, 9), channel=1, 0.58, 0.55, /normal		
  ENDFOR
  stop
 

@@ -24,7 +24,7 @@ pro aia_dt_speed, ps=ps
 				xs=5, $
 				ys=9
 	endif else begin
-		window, 0, xs=500, ys=800
+		window, 1, xs=500, ys=800
 	endelse
 	
 	xposl = 0.15
@@ -45,12 +45,13 @@ pro aia_dt_speed, ps=ps
 
 	dtpoints = findfile('aia_*_dt*.sav')
 	for i=0, n_elements(dtpoints)-1 do begin
-		
+		tstart = anytim('2014-apr-18T12:35:00', /utim)
+		tend = anytim('2014-apr-18T12:55:00', /utim)
 		restore, dtpoints[i], /verb
 		color = colors[where(waves eq DT_POINTS_STRUCT.WAVE)]
 		psym = psyms[where(angles eq DT_POINTS_STRUCT.ANGLE)]
 
-		deproject = 1.0/cos(45.0*!dtor)
+		deproject = 1.0/cos(48.0*!dtor)
 
 		tim = dt_points_struct.time
 		dis = dt_points_struct.dis*deproject
@@ -59,6 +60,7 @@ pro aia_dt_speed, ps=ps
 				ytitle ='Distance (Mm)', $
 				color = color, $
 				yr = [40, 180]*deproject, $
+				/xs, $
 				xrange = [tstart, tend], $
 				/ys, $
 				psym = psym, $
@@ -97,19 +99,46 @@ pro aia_dt_speed, ps=ps
 		dis_sim = p[0]*tim_sim^2.0 + p[1]*tim_sim + p[2]
 		vel_171 = deriv(tim_sim, dis_sim)*1e3	;	km/s
 		
+		tstart = anytim('2014-apr-18T12:35:00', /utim)
+	    tend = anytim('2014-apr-18T13:30:00', /utim)
 		utplot, tim_sim + tim[0], vel_171, $
 			ytitle = 'Velocity (km/s)', $
 			/noerase, $
-			yr = [0, 450], $
+			yr = [1, 2500], $
+			/ys, $
 			xrange = [tstart, tend], $
 			position = [xposl, 0.05, xposr, 0.5], $
 			color = color, $
 			thick=1, $
 			psym = psym, $
-			symsize=1.5
+			symsize=1.5, $
+			/ylog
 
 
 	endfor
+
+		radio_speeds = [350., 540., 1000.]
+		radio_times = anytim(['2014-04-18T12:53:00.465', $
+							  '2014-04-18T12:50:21.221', $
+							  '2014-04-18T12:58:54.767'], /utim)
+
+		euv_wave_speed = [740.0];/cos(48*!dtor)
+		euv_wave_time = anytim(['2014-04-18T12:53:00.465'], /utim)
+
+		cme_speed = [1250.0];/cos(48*!dtor)
+		cme_time = anytim(['2014-04-18T13:25:00.465'], /utim)
+
+
+		PLOTSYM, 0, /fill
+		outplot, radio_times, radio_speeds, psym=8, color=0, symsize=1.2
+		outplot, radio_times, radio_speeds, psym=8, color=7, symsize=1.0
+
+		outplot, euv_wave_time, euv_wave_speed, psym=8, color=0, symsize=1.2
+		outplot, euv_wave_time, euv_wave_speed, psym=8, color=10, symsize=1.0
+
+		outplot, cme_time, cme_speed, psym=8, color=0, symsize=1.2
+		outplot, cme_time, cme_speed, psym=8, color=8, symsize=1.0
+
 	
 	
 	if keyword_set(ps) then begin

@@ -44,12 +44,12 @@ pro nrh_gauss_fit
 	!p.charsize = 1.5
 	cd, '~/Data/2014_apr_18/radio/nrh'
 	files = findfile('*.fts') 
-	tstart = anytim(file2time('20140418_124800'), /yoh, /trun, /time_only)
+	tstart = anytim(file2time('20140418_124847'), /yoh, /trun, /time_only)
 	tend   = anytim(file2time('20140418_125340'), /yoh, /trun, /time_only)
 	
 	;Define the interval where tracking doesn't work and have to do manual tracking
-	t1_interval = anytim(file2time('20140418_124800'),/utim)
-	t2_interval = anytim(file2time('20140418_121000'),/utim)
+	t1_interval = anytim(file2time('20140418_124847'),/utim)
+	t2_interval = anytim(file2time('20140418_125310'),/utim)
 	
 	read_nrh, files[n_elements(files)-2], $
 			nrh_hdr, $
@@ -83,29 +83,43 @@ pro nrh_gauss_fit
 		; 			Plot the map and image
 		wset, 1
 		loadct, 3, /silent
-		plot_image, img, title=nrh_times[i]
+		plot_image, img[60:100, 40:80], title=nrh_times[i]
 	
 		;-------------------------------------------;
 		; 			Select Source Peak
+		;IF i eq 0 THEN BEGIN
+		;	print, 'Please select source peak...'
+		;	cursor, x, y
+		;	x = round(x) 
+		;	y = round(y) 
+		;	manual_pos[0,i] = x 
+		;	manual_pos[1,i] = y 
+		;ENDIF ELSE BEGIN    
+		;	x = manual_pos[0, i-1]
+		;	y = manual_pos[1, i-1]
+		;ENDELSE	
+		
 		IF i eq 0 THEN BEGIN
 			print, 'Please select source peak...'
 			cursor, x, y
+			x = x+60.0
+			y = y+40.0
 			x = round(x) 
 			y = round(y) 
 			manual_pos[0,i] = x 
 			manual_pos[1,i] = y 
-		ENDIF ELSE BEGIN    
-			x = manual_pos[0, i-1]
-			y = manual_pos[1, i-1]
-		ENDELSE	
-		
-		;IF anytim(nrh_times[i], /utim) gt t1_interval and $
-		;anytim(nrh_times[i], /utim) lt t2_interval THEN BEGIN
-		;	cursor,x,y
-		 ;   manual_pos[0,i] = x
-	    ;	manual_pos[1,i] = y
-		;ENDIF   
+		endif	
+
+		IF anytim(nrh_times[i], /utim) gt t1_interval and $
+			anytim(nrh_times[i], /utim) lt t2_interval THEN BEGIN
+			cursor, x, y
+			x = x+60.0
+			y = y+40.0
+		    manual_pos[0,i] = x +60.
+	    	manual_pos[1,i] = y +40.
+		ENDIF   
 	
+		stop
 		;-------------------------------------------;
 		; 			Extract image section
 		x1 = x - box
@@ -127,7 +141,7 @@ pro nrh_gauss_fit
 		plot_image, data_section
 		shade_surf, data_section, charsize=3
 		
-		;-------------------------------------------;
+		;------------------------------------------------------;
 		; Embed image section in large array of constant values 
 		; (easier for Gauss-fit to handle)
 		x_len = (size(data_section))[1]
@@ -140,8 +154,8 @@ pro nrh_gauss_fit
 		;---------------------------------------
 		;			  FIT 2D Gauss 
 		result = gauss2dfit(junk_array, a, /tilt)
-			;Since gauss2dfit doens't give errors, use 'a' as start values
-			;for mpfit2dfun (which provides errors).
+			; Since gauss2dfit doens't give errors, use 'a' as start values
+			; for mpfit2dfun (which provides errors).
 		start_parms = a
 		xjunk = dindgen( n_elements(junk_array[*,0]) )
 		yjunk = dindgen( n_elements(junk_array[0,*]) )
