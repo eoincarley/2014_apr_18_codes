@@ -42,7 +42,7 @@ pro nrh_aia_imgs_all_freqs_20140418, nrh_freqs
 	  
 		;--------------------------------------------------;
 		;				  Plot diff image	
-		FOV = [15.0, 15.0]
+		FOV = [25.0, 25.0]
 		CENTER = [500.0, -350.0]
 		loadct, 1, /silent
 		plot_map, diff_map(map_aia, map_aia_pre), $
@@ -104,8 +104,9 @@ pro nrh_aia_imgs_all_freqs_20140418, nrh_freqs
 				/noaxes, $
 				thick=2, $
 				color=nrh_colors[k]
+
 		endfor	
-			
+			print, i
 	 ;tv, bytscl( congrid(map_nrh_V_neg.data, 402, 402), -1e7, 5e7), channel=1, 0.58, 0.55, /normal		
 	ENDFOR
  stop

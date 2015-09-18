@@ -35,7 +35,7 @@ pro aia_dt_speed, ps=ps
 	;--------------------------------------;
 	;				171A
 	;
-	colors = [3, 4, 5, 6]
+	colors = [3, 5, 4, 6]
 	waves = ['131','171','193','211']
 
 	psyms = [4, 5, 6, 7]
@@ -117,27 +117,36 @@ pro aia_dt_speed, ps=ps
 
 	endfor
 
-		radio_speeds = [350., 540., 1000.]
-		radio_times = anytim(['2014-04-18T12:53:00.465', $
-							  '2014-04-18T12:50:21.221', $
-							  '2014-04-18T12:58:54.767'], /utim)
-
-		euv_wave_speed = [740.0];/cos(48*!dtor)
-		euv_wave_time = anytim(['2014-04-18T12:53:00.465'], /utim)
-
-		cme_speed = [1250.0];/cos(48*!dtor)
-		cme_time = anytim(['2014-04-18T13:25:00.465'], /utim)
+	set_line_color
+	legend, ['131 A','171 A','193 A','211 A'], colors = [3, 5, 4, 6], linestyle=[0,0,0,0], $
+			box = 0, $
+			/bottom, $
+			/right, $
+			thick=3
 
 
-		PLOTSYM, 0, /fill
-		outplot, radio_times, radio_speeds, psym=8, color=0, symsize=1.2
-		outplot, radio_times, radio_speeds, psym=8, color=7, symsize=1.0
 
-		outplot, euv_wave_time, euv_wave_speed, psym=8, color=0, symsize=1.2
-		outplot, euv_wave_time, euv_wave_speed, psym=8, color=10, symsize=1.0
+	radio_speeds = [350., 540., 1000.]
+	radio_times = anytim(['2014-04-18T12:53:00.465', $
+						  '2014-04-18T12:50:21.221', $
+						  '2014-04-18T12:58:54.767'], /utim)
 
-		outplot, cme_time, cme_speed, psym=8, color=0, symsize=1.2
-		outplot, cme_time, cme_speed, psym=8, color=8, symsize=1.0
+	euv_wave_speed = [740.0];/cos(48*!dtor)
+	euv_wave_time = anytim(['2014-04-18T12:53:00.465'], /utim)
+
+	cme_speed = [1250.0];/cos(48*!dtor)
+	cme_time = anytim(['2014-04-18T13:25:00.465'], /utim)
+
+
+	PLOTSYM, 0, /fill
+	outplot, radio_times, radio_speeds, psym=8, color=0, symsize=1.2
+	outplot, radio_times, radio_speeds, psym=8, color=7, symsize=1.0
+
+	outplot, euv_wave_time, euv_wave_speed, psym=8, color=0, symsize=1.2
+	outplot, euv_wave_time, euv_wave_speed, psym=8, color=10, symsize=1.0
+
+	outplot, cme_time, cme_speed, psym=8, color=0, symsize=1.2
+	outplot, cme_time, cme_speed, psym=8, color=8, symsize=1.0
 
 	
 	

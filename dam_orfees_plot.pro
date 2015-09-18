@@ -35,7 +35,7 @@ pro dam_orfees_plot, save_orfees = save_orfees
 	;			Window params
 	loadct, 0
 	reverse_ct
-	window, 0, xs=1000, ys=600, retain=2
+	window, 0, xs=1200, ys=800, retain=2
 	!p.charsize=1.5
 	!p.thick=1
 	!x.thick=1
@@ -132,11 +132,11 @@ pro dam_orfees_plot, save_orfees = save_orfees
 		data_bg.TIME_B3 = time_b3
 		data_bg.TIME_B4 = time_b4
 		data_bg.TIME_B5 = time_b5
-		save, data_bg, filename = 'orf_20140418_bsubbed_minstdev.sav', $
+		save, data_bg, filename = 'orf_20140418_bsubbed_average.sav', $
 			description='Data produced using sliding 5 minute background. Data is logged.'
 	endif else begin
 		fbands = mrdfits('orf20140418_101743.fts', 1, hdr1)
-		restore, 'orf_20140418_bsubbed_minstdev.sav', /verb
+		restore, 'orf_20140418_bsubbed_average.sav', /verb
 	endelse
 	
 	;***********************************;
@@ -144,15 +144,15 @@ pro dam_orfees_plot, save_orfees = save_orfees
 	;***********************************;	
 	loadct, 74
 	reverse_ct
-	scl_lwr = -0.1				;Lower intensity scale for the plots.
+	scl_lwr = -0.2				;Lower intensity scale for the plots.
 
-	plot_spec, dam_spec, dam_tim, reverse(freq), [freq0, freq1], scl0=-0.05, scl1=0.2
+	plot_spec, dam_spec, dam_tim, reverse(freq), [freq0, freq1], scl0=-0.1, scl1=0.15
 
-	plot_spec, data_bg.STOKESI_B1, data_bg.TIME_B1, fbands.FREQ_B1, [freq0, freq1], scl0=-0.1, scl1=0.5
-	plot_spec, data_bg.STOKESI_B2, data_bg.TIME_B1, fbands.FREQ_B2, [freq0, freq1], scl0=-0.1, scl1=0.5
-	plot_spec, data_bg.STOKESI_B3, data_bg.TIME_B1, fbands.FREQ_B3, [freq0, freq1], scl0=-0.1, scl1=0.5
-	plot_spec, data_bg.STOKESI_B4, data_bg.TIME_B1, fbands.FREQ_B4, [freq0, freq1], scl0=-0.1, scl1=0.5
-	plot_spec, data_bg.STOKESI_B5, data_bg.TIME_B1, fbands.FREQ_B5, [freq0, freq1], scl0=-0.1, scl1=0.5
+	plot_spec, data_bg.STOKESI_B1, data_bg.TIME_B1, fbands.FREQ_B1, [freq0, freq1], scl0=scl_lwr, scl1=0.5
+	plot_spec, data_bg.STOKESI_B2, data_bg.TIME_B1, fbands.FREQ_B2, [freq0, freq1], scl0=scl_lwr, scl1=0.5
+	plot_spec, data_bg.STOKESI_B3, data_bg.TIME_B1, fbands.FREQ_B3, [freq0, freq1], scl0=scl_lwr, scl1=0.5
+	plot_spec, data_bg.STOKESI_B4, data_bg.TIME_B1, fbands.FREQ_B4, [freq0, freq1], scl0=scl_lwr, scl1=0.3
+	plot_spec, data_bg.STOKESI_B5, data_bg.TIME_B1, fbands.FREQ_B5, [freq0, freq1], scl0=scl_lwr, scl1=0.5
 	
 	
 	;x2png, '~/Data/cesra_school/dam_orfees_burst_20140418.png'
