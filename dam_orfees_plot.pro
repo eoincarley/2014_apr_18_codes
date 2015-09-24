@@ -35,7 +35,7 @@ pro dam_orfees_plot, save_orfees = save_orfees
 	;			Window params
 	loadct, 0
 	reverse_ct
-	window, 0, xs=1200, ys=800, retain=2
+	;window, 0, xs=1200, ys=800, retain=2
 	!p.charsize=1.5
 	!p.thick=1
 	!x.thick=1
@@ -68,8 +68,8 @@ pro dam_orfees_plot, save_orfees = save_orfees
 	dam_tim0 = anytim(file2time(time0), /time_only, /trun, /yoh)
 	dam_tim1 = anytim(file2time(time1), /time_only, /trun, /yoh)
 
-	dam_spec = reverse(transpose(dam_spec))
-	dam_spec = slide_backsub(dam_spec, dam_tim, 10.0*60.0)	
+	;dam_spec = reverse(transpose(dam_spec))
+	;dam_spec = slide_backsub(dam_spec, dam_tim, 10.0*60.0)	
 	
 	;***********************************;
 	;	   Read and process Orfees		
@@ -84,7 +84,8 @@ pro dam_orfees_plot, save_orfees = save_orfees
 				  fbands.FREQ_B3, $
 				  fbands.FREQ_B4, $
 				  fbands.FREQ_B5  ]
-		nfreqs = n_elements(freqs)			
+		nfreqs = n_elements(freqs)	
+		stop		
 		
 		null = mrdfits('orf20140418_101743.fts', 2, hdr_bg, row=0)
 		tstart = anytim(file2time('20140418_101743'), /utim)

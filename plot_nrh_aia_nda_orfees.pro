@@ -15,9 +15,10 @@ pro plot_nrh_aia_nda_orfees
 	nrh_aia_imgs_all_freqs_20140418_v2, times, freqs = freqs
 
 
-	stop
-	times_freqs = [times, freqs]
-	dam_orfees_plot_v0, times_freqs=times_freqs
+	times_freqs = [[times[1:n_elements(times)-1]], [freqs]]
+
+	
+	dam_orfees_oplot, times_freqs=times_freqs
 
 
 END

@@ -12,7 +12,6 @@ pro plot_spec, data, time, freqs, frange, bg, scl0=scl0, scl1=scl1
 	data = constbacksub(data, /auto)
 	data = data/max(data)
 	data = reverse(data, 2)
-	wset,0
 	spectro_plot, (data > (scl0) < scl1), $
   				time, $
   				reverse(freqs), $
@@ -24,7 +23,7 @@ pro plot_spec, data, time, freqs, frange, bg, scl0=scl0, scl1=scl1
   				yr=[ frange[0], frange[1] ], $
   				xrange = '2014-Apr-18 '+['12:30:00', '13:20:00'], $
   				/noerase, $
-  				position = [0.27, 0.1, 0.95, 0.95]
+  				position = [0.07, 0.29, 0.95, 0.95]
 		
 	;set_line_color	
   	;hline, 432.0, /data, color=3
@@ -32,18 +31,11 @@ pro plot_spec, data, time, freqs, frange, bg, scl0=scl0, scl1=scl1
 END
 
 
-pro dam_orfees_plot_v0, times_freqs=times_freqs
+pro dam_orfees_oplot, times_freqs=times_freqs
 
 	;------------------------------------;
 	;			    Window params
-
-	loadct, 0
-	reverse_ct
-	window, 0, xs=1200, ys=800, retain=2
-	!p.charsize=1.5
-	!p.thick=1
-	!x.thick=1
-	!y.thick=1
+	!p.charsize=1
 	freq0 = 8
 	freq1 = 1000
 	time0 = '20140418_123000'
@@ -129,25 +121,17 @@ pro dam_orfees_plot_v0, times_freqs=times_freqs
 	dam_spec = reverse(transpose(dam_spec))
 	plot_spec, dam_spec, dam_tim, reverse(freq), [freq0, freq1], average(dam_spec, 2), scl0=(-0.2), scl1=0.7
 
-	if keyword_set(times_freq) then begin
-		times = times_freq[0, *]
-		freqs = times_freq[1, *]
-		plots, times, freqs, psym=1, thick=2
+	if keyword_set(times_freqs) then begin
+		times = times_freqs[*, 0]
+		freqs = times_freqs[*, 1]
+		plots, times, freqs, /data, psym=1, symsize=2, color=0, thick=2
+		plots, times, freqs, /data, psym=1, symsize=1, color=4, thick=0.5
 
 	endif
 	
 	;---------------------------------;
 	;		Plot frequency time
-	;
-	set_line_color
-	restore, 'typeII_ft.sav', /verb;'ft_dam_orfees_20140418.sav', /verb
-	plots, t, f, /data, psym=1, symsize=2, color=0, thick=2
-	plots, t, f, /data, psym=1, symsize=1, color=4, thick=0.5
-
-	restore, 'precursor_topedge_ft.sav', /verb;'ft_dam_orfees_20140418.sav', /verb
-	plots, t[0:10], f[0:10], /data, psym=1, symsize=2, color=0, thick=2
-	plots, t[0:10], f[0:10], /data, psym=1, symsize=1, color=4, thick=0.5
-
+	
 	
 	x2png, '~/Desktop/dam_orfees_typeII_points.png'
 	
