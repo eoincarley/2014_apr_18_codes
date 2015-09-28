@@ -3,28 +3,25 @@ pro plot_nrh_aia_nda_orfees
 	
 	window, xs=1000, ys=1000, retain = 2
 	!p.charsize=1.5
+
+	dam_orfees_oplot, time_points = time_points, freq_points=freq_points
 	
-	times = anytim(['2014-04-18T12:48:00.000', $
-				 '2014-04-18T12:49:00.000', $
-				 '2014-04-18T12:50:00.000', $
-				 '2014-04-18T12:51:00.000', $
-				 '2014-04-18T12:56:00.000', $
-				 '2014-04-18T12:58:00.000', $
-				 '2014-04-18T12:59:30.000' ], /utim)
 
-	nrh_aia_imgs_all_freqs_20140418_v2, times, freqs = freqs
-
-
-	times_freqs = [[times[1:n_elements(times)-1]], [freqs]]
-
+	nrh_aia_imgs_all_freqs_20140418_v2, time_points, freq_points
 	
-	dam_orfees_oplot, times_freqs=times_freqs
+	;times = anytim(['2014-04-18T12:48:00.000', $
+	;			 '2014-04-18T12:49:00.000', $
+	;			 '2014-04-18T12:50:00.000', $
+	;			 '2014-04-18T12:51:00.000', $
+	;			 '2014-04-18T12:56:00.000', $
+	;			 '2014-04-18T12:58:00.000', $
+	;			 '2014-04-18T12:59:30.000' ], /utim)
 
 
 END
 
 
-pro nrh_aia_imgs_all_freqs_20140418_v2, times, freqs=freqs
+pro nrh_aia_imgs_all_freqs_20140418_v2, times, freqs
 
 	cd,'~/Data/2014_Apr_18/sdo/171A/'
 	
@@ -47,9 +44,8 @@ pro nrh_aia_imgs_all_freqs_20140418_v2, times, freqs=freqs
 	;		 tstart + 60*1.0*11.5 ]
 
 
-	file_indices = intarr(n_elements(times))
-	for i=0, n_elements(times)-1 do file_indices[i] = closest(aia_times, times[i])
-	aia_files = aia_files[file_indices]
+	aia_file_indices = intarr(n_elements(times))
+	for i=0, n_elements(times)-1 do aia_file_indices[i] = closest(aia_times, times[i])
 
 
 	ybottom = 0.05
@@ -59,20 +55,24 @@ pro nrh_aia_imgs_all_freqs_20140418_v2, times, freqs=freqs
 				       [[0.35, ybottom, 0.5, ytop ]], $
 				       [[0.5, ybottom, 0.65, ytop ]], $
 				   	   [[0.65, ybottom, 0.8, ytop ]], $
-				       [[0.8, ybottom, 0.95, ytop ]], $
-				       [[0.95, ybottom, 1.0, ytop ]] ]
+				       [[0.8, ybottom, 0.95, ytop ]] ]
+
+	nrh_freqs = [150.0, 173.0, 228.0, 270.0, 298.0, 327.0, 408.0, 432.0, 445.0]
+	nrh_indices = intarr(n_elements(freqs))
+	for i=0, n_elements(freqs)-1 do nrh_indices[i] = closest(nrh_freqs, freqs[i])		       
 
   
-	FOR i = 1, n_elements(aia_files)-1 DO BEGIN
+	FOR i = 0, n_elements(aia_file_indices)-1 DO BEGIN
 		
 		cd, '~/Data/2014_Apr_18/sdo/171A/'
 		;-------------------------------------------------;
 		;				 	Plot AIA
 		;
-		read_sdo, aia_files[i-1], $
+		aia_index = aia_file_indices[i]
+		read_sdo, aia_files[aia_index-1], $
 			he_aia_pre, $
 			data_aia_pre
-		read_sdo, aia_files[i], $
+		read_sdo, aia_files[aia_index], $
 			he_aia, $
 			data_aia
 
@@ -88,16 +88,16 @@ pro nrh_aia_imgs_all_freqs_20140418_v2, times, freqs=freqs
 		;--------------------------------------------------;
 		;				  Plot diff image
 		;
-
-		FOV = [10.0, 10.0]
+		pos = aia171_img_pos[*, *, i]
+		FOV = [15.0, 15.0]
 		CENTER = [600.0, -300.0]
-		loadct, 1, /silent
+		loadct, 0, /silent
 		plot_map, diff_map(map_aia, map_aia_pre), $
 			dmin = -25.0, $
 			dmax = 25.0, $
 			fov = FOV, $
 			center = CENTER, $
-			position = aia171_img_pos[*, *, i-1], $
+			position = pos, $
 			/noerase, $
 			/normal, $
 			/notitle, $
@@ -114,12 +114,14 @@ pro nrh_aia_imgs_all_freqs_20140418_v2, times, freqs=freqs
 
 		;-------------------------------------------------;
 		;					PLOT NRH
+		nrh_index = nrh_indices[i]
+
 		tstart = anytim(he_aia.date_obs, /utim) 
 		t0 = anytim(tstart, /yoh, /trun, /time_only)
 		  
 		cd,'~/Data/2014_Apr_18/radio/nrh/'
 		nrh_filenames = findfile('*.fts')
-		read_nrh, nrh_filenames[9-i], $	; 445 MHz
+		read_nrh, nrh_filenames[nrh_index], $	; 445 MHz
 				nrh_hdr, $
 				nrh_data, $
 				hbeg=t0
@@ -147,7 +149,11 @@ pro nrh_aia_imgs_all_freqs_20140418_v2, times, freqs=freqs
 			/noaxes, $
 			thick=2, $
 			color=[i+2];, $
-			
+
+		xyouts, pos[0]+0.01, pos[1]+0.01, 'NRH ' + string(nrh_hdr.freq, format='(I3)') + ' MHz', /normal, charsize=1.0, color=i+2
+		xyouts, pos[0]+0.01, pos[3]+0.01, t0+' UT', /normal, charsize=1.0
+
+
 			print, i
 			print, he_aia.date_obs
 			print, 'NRH ' + string(nrh_hdr.freq, format='(I3)') + ' MHz'
