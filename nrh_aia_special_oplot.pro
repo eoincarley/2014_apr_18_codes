@@ -16,6 +16,7 @@ pro nrh_aia_special_oplot, diff_img=diff_img, hue = hue
 	mreadfits_header, f, ind
 	aia_files = f[where(anytim(ind.date_obs, /utim) ge tstart) - 5]
 
+
 	winsz = 800.0
 	loadct, 1
 	!p.background=255
@@ -25,7 +26,7 @@ pro nrh_aia_special_oplot, diff_img=diff_img, hue = hue
 
 	  
 
-	  	FOR i = 20, n_elements(aia_files)-15 DO BEGIN
+	  	FOR i = 5, n_elements(aia_files)-15 DO BEGIN
 
 	  	  	;------------------------------------------------;
 			;				 	Plot AIA
@@ -101,7 +102,7 @@ pro nrh_aia_special_oplot, diff_img=diff_img, hue = hue
 			    
 			;-------------------------------------------------;
 			;					PLOT NRH
-			tstart = anytim(he_aia.date_obs, /utim) 
+			tstart = anytim(he_aia.date_obs, /utim) + 3.0
 			t0 = anytim(tstart, /yoh, /trun, /time_only)
 
 			  
@@ -185,7 +186,7 @@ pro nrh_aia_special_oplot, diff_img=diff_img, hue = hue
 
 				freq_tag = string(nrh_hdr.freq, format='(I03)')
 				;xyouts, 0.5, 0.86, 'AIA 171A, NRH '+freq_tag+' MHz  '+he_aia.date_obs+' UT', $
-				xyouts, 0.5, 0.86, 'AIA 171A '+he_aia.date_obs+' UT', $
+				xyouts, 0.5, 0.86, 'AIA '+string(he_aia.wavelnth, format='(I3)')+' '+he_aia.date_obs+' UT', $
 						/normal, $
 						alignment=0.5, $
 						charsize=2.0
