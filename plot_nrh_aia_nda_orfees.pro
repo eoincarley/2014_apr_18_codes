@@ -1,7 +1,9 @@
 pro plot_nrh_aia_nda_orfees
 
-	
-	window, xs=1000, ys=1000, retain = 2
+	loadct,0
+	!p.color=0
+	!p.background=255
+	window, xs=1500, ys=1500, retain = 2
 	!p.charsize=1.5
 
 	dam_orfees_oplot, time_points = time_points, freq_points=freq_points
@@ -114,10 +116,13 @@ pro nrh_aia_imgs_all_freqs_20140418_v2, times, freqs
 
 		;-------------------------------------------------;
 		;					PLOT NRH
+		;
 		nrh_index = nrh_indices[i]
 
 		tstart = anytim(he_aia.date_obs, /utim) 
 		t0 = anytim(tstart, /yoh, /trun, /time_only)
+
+		stop
 		  
 		cd,'~/Data/2014_Apr_18/radio/nrh/'
 		nrh_filenames = findfile('*.fts')

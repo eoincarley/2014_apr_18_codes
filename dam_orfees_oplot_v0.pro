@@ -4,10 +4,6 @@ pro plot_spec, data, time, freqs, frange, bg, scl0=scl0, scl1=scl1
 	data = 10.0*alog10(data)
 
 	data = transpose(data)
-	
-	;bg_spec = data
-	;FOR i = 0, n_elements(data[0,*])-1 DO bg_spec[*, i] = bg[i]
-	;data = data-bg_spec
 
 	data = constbacksub(data, /auto)
 	data = data/max(data)
@@ -22,29 +18,31 @@ pro plot_spec, data, time, freqs, frange, bg, scl0=scl0, scl1=scl1
   				ytitle='Frequency (MHz)', $
   				title = 'Orfees and DAM', $
   				yr=[ frange[0], frange[1] ], $
-  				xrange = '2014-Apr-18 '+['12:30:00', '13:20:00'], $
+  				xrange = '2014-Apr-18 '+['12:55:00', '12:57:00'], $
   				/noerase, $
-  				position = [0.1, 0.1, 0.95, 0.95]
-		
-	;set_line_color	
-  	;hline, 432.0, /data, color=3
+  				position = [0.05, 0.32, 0.95, 0.99]
   	
 END
 
 
-pro dam_orfees_plot_v0, times_freqs=times_freqs
+pro dam_orfees_oplot_v0, time_points = time_points, freq_points=freq_points
+
+	; This is an procedure to plot DAM and Orfées along with AIA and NRH.
+	; It is used bu plot_nrh_aia_orfees. It plots the dynamic spectra with 
+	; constbacksub.
 
 	;------------------------------------;
-	;			    Window params
+	;			Window params
 
 	loadct, 0
-	reverse_ct
-	window, 0, xs=1200, ys=800, retain=2
+	!p.background=0
+	!p.color=255
+	window, 0, xs=1500, ys=1500, retain=2
 	!p.charsize=1.5
 	!p.thick=1
 	!x.thick=1
 	!y.thick=1
-	freq0 = 8
+	freq0 = 130
 	freq1 = 1000
 	time0 = '20140418_123000'
 	time1 = '20140418_133000'
@@ -117,39 +115,28 @@ pro dam_orfees_plot_v0, times_freqs=times_freqs
 	;***********************************;
 	;			Read Orfees		
 	;***********************************;	
-	scl_lwr = -0.1				;Lower intensity scale for the plots.
+	scl_lwr = -0.0				;Lower intensity scale for the plots.
 	loadct, 74
 	reverse_ct
-	plot_spec, data.STOKESI_B1, time_b1, fbands.FREQ_B1, [freq0, freq1], average(bg.stokesi_b1, 1), scl0=scl_lwr, scl1=1.5
-	plot_spec, data.STOKESI_B2, time_b2, fbands.FREQ_B2, [freq0, freq1], average(bg.stokesi_b2, 1), scl0=scl_lwr, scl1=1.5
-	plot_spec, data.STOKESI_B3, time_b3, fbands.FREQ_B3, [freq0, freq1], average(bg.stokesi_b3, 1), scl0=scl_lwr, scl1=1.5
-	plot_spec, data.STOKESI_B4, time_b4, fbands.FREQ_B4, [freq0, freq1], average(bg.stokesi_b4, 1), scl0=scl_lwr, scl1=2.0
+	plot_spec, data.STOKESI_B1, time_b1, fbands.FREQ_B1, [freq0, freq1], average(bg.stokesi_b1, 1), scl0=scl_lwr, scl1=0.6
+	plot_spec, data.STOKESI_B2, time_b2, fbands.FREQ_B2, [freq0, freq1], average(bg.stokesi_b2, 1), scl0=scl_lwr, scl1=0.8
+	plot_spec, data.STOKESI_B3, time_b3, fbands.FREQ_B3, [freq0, freq1], average(bg.stokesi_b3, 1), scl0=scl_lwr, scl1=1.2
+	plot_spec, data.STOKESI_B4, time_b4, fbands.FREQ_B4, [freq0, freq1], average(bg.stokesi_b4, 1), scl0=scl_lwr, scl1=1.5
 	plot_spec, data.STOKESI_B5, time_b5, fbands.FREQ_B5, [freq0, freq1], average(bg.stokesi_b5, 1), scl0=-0.05, scl1=0.5
 	
 	dam_spec = reverse(transpose(dam_spec))
 	plot_spec, dam_spec, dam_tim, reverse(freq), [freq0, freq1], average(dam_spec, 2), scl0=(-0.2), scl1=0.7
 
-	if keyword_set(times_freq) then begin
-		times = times_freq[0, *]
-		freqs = times_freq[1, *]
-		plots, times, freqs, psym=1, thick=2
+	hline, 445.0, /data, color=255
+  	hline, 432.0, /data, color=255
+  	hline, 408.0, /data, color=255	
+  	hline, 327.0, /data, color=255	
+  	hline, 298.0, /data, color=255		
+  	hline, 270.0, /data, color=255
+  	hline, 228.0, /data, color=255
+  	hline, 173.0, /data, color=255
+  	hline, 150.0, /data, color=255	
 
-	endif
-	
-	;---------------------------------;
-	;		Plot frequency time
-	;
-	set_line_color
-	restore, 'typeII_ft.sav', /verb;'ft_dam_orfees_20140418.sav', /verb
-	plots, t, f, /data, psym=1, symsize=2, color=0, thick=2
-	plots, t, f, /data, psym=1, symsize=1, color=4, thick=0.5
+	point, time_points, freq_points, /data
 
-	restore, 'precursor_topedge_ft.sav', /verb;'ft_dam_orfees_20140418.sav', /verb
-	plots, t[0:10], f[0:10], /data, psym=1, symsize=2, color=0, thick=2
-	plots, t[0:10], f[0:10], /data, psym=1, symsize=1, color=4, thick=0.5
-
-	
-	x2png, '~/Desktop/dam_orfees_typeII_points.png'
-	
-stop
 END

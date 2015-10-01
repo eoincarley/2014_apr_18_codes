@@ -31,7 +31,7 @@ END
 pro dam_orfees_oplot, time_points = time_points, freq_points=freq_points
 
 	;------------------------------------;
-	;			    Window params
+	;			Window params
 	!p.charsize=1
 	freq0 = 130
 	freq1 = 1000
@@ -147,15 +147,15 @@ pro dam_orfees_oplot, time_points = time_points, freq_points=freq_points
 	plot_spec, data_bg.STOKESI_B4, data_bg.TIME_B1, fbands.FREQ_B4, [freq0, freq1], scl0=scl_lwr, scl1=0.4
 	plot_spec, data_bg.STOKESI_B5, data_bg.TIME_B1, fbands.FREQ_B5, [freq0, freq1], scl0=scl_lwr, scl1=0.5
 
-	hline, 445.0, /data	
-  	hline, 432.0, /data	
-  	hline, 408.0, /data	
-  	hline, 327.0, /data	
-  	hline, 298.0, /data		
-  	hline, 270.0, /data
-  	hline, 228.0, /data
-  	hline, 173.0, /data
-  	hline, 150.0, /data	
+	hline, 445.0, /data, color=255
+  	hline, 432.0, /data, color=255
+  	hline, 408.0, /data, color=255	
+  	hline, 327.0, /data, color=255	
+  	hline, 298.0, /data, color=255		
+  	hline, 270.0, /data, color=255
+  	hline, 228.0, /data, color=255
+  	hline, 173.0, /data, color=255
+  	hline, 150.0, /data, color=255	
 
 	;if keyword_set(time_points) then begin
 	point, time_points, freq_points, /data
