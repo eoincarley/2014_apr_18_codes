@@ -4,13 +4,13 @@ pro nrh_aia_special_oplot, diff_img=diff_img, hue = hue
 
 	;-------------------------------------------------;
 	;			Choose files unaffected by AEC
-	aia_folder = '~/Data/2014_Apr_18/sdo/131A/'
+	aia_folder = '~/Data/2014_Apr_18/sdo/171A/'
 	cd, aia_folder
 	aia_files = findfile('aia*.fits')
 	mreadfits_header, aia_files, ind, only_tags='exptime'
 	f = aia_files;[where(ind.exptime gt 1.)]
 
-	tstart = anytim(file2time('20140418_123000'), /utim)
+	tstart = anytim(file2time('20140418_123045'), /utim)
 	tend   = anytim(file2time('20140418_132500'), /utim)
 
 	mreadfits_header, f, ind
@@ -70,7 +70,7 @@ pro nrh_aia_special_oplot, diff_img=diff_img, hue = hue
 		  
 			;--------------------------------------------------;
 			;				  Plot diff image	
-			loadct, 16, /silent
+			loadct, 0, /silent
 			plot_map, map_aia, $
 				dmin =  min_val, $
 				dmax = max_val, $
@@ -100,23 +100,25 @@ pro nrh_aia_special_oplot, diff_img=diff_img, hue = hue
 			;	plots, xlin, ylin, /data, color=4, thick=2.5
 			;endfor	
 			    
-			;-------------------------------------------------;
-			;					PLOT NRH
-			tstart = anytim(he_aia.date_obs, /utim) + 3.0
-			t0 = anytim(tstart, /yoh, /trun, /time_only)
-
-			  
+			
 			cd, '~/Data/2014_Apr_18/radio/nrh/'
 			nrh_filenames = findfile('*.fts')
 
-			for j=0,8 do begin
+			for j=0, n_elements(nrh_filenames)-1 do begin
+
+				;-------------------------------------------------;
+				;					PLOT NRH
+				;
+				tstart = anytim(he_aia.date_obs, /utim) ;+ 3.0
+				t0 = anytim(tstart, /yoh, /trun, /time_only)
+			  	stop
+			  	
 				nrh_file_index = j
 				read_nrh, nrh_filenames[nrh_file_index], $	; 432 MHz
 						nrh_hdr, $
 						nrh_data, $
 						hbeg=t0
-					
-									
+										
 				index2map, nrh_hdr, nrh_data, $
 						 nrh_map  
 			  
@@ -201,6 +203,17 @@ pro nrh_aia_special_oplot, diff_img=diff_img, hue = hue
 						charthick=1.5, $
 						/normal		
 
+				xyouts, 0.5, 0.82, nrh_hdr.date_obs+' UT', $
+						/normal, $
+						color=0, $
+						charthick=3
+
+				xyouts, 0.5, 0.82, nrh_hdr.date_obs+' UT', $
+						/normal, $
+						color=2, $
+						charthick=1.5		
+	
+
 			endfor				
 
 			;xyouts, 0.15, 0.05, 'Contour levels: '+$
@@ -214,7 +227,7 @@ pro nrh_aia_special_oplot, diff_img=diff_img, hue = hue
 
 			freq_tag = string(nrh_hdr.freq, format='(I03)')
 	
-			x2png, 'image_'+string(i-5, format='(I03)')+'.png'			
+			;x2png, 'image_'+string(i-5, format='(I03)')+'.png'			
 
 			if anytim(he_aia.date_obs, /utim) gt tend then BREAK
 	    ENDFOR
