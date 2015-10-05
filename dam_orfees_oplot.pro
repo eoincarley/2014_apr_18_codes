@@ -161,6 +161,9 @@ pro dam_orfees_oplot, time_points = time_points, freq_points=freq_points
 	point, time_points, freq_points, /data
 	;endif
 
+	set_line_color
+	plots, time_points, 150.0, psym=1, color=1, /data
+
 	;---------------------------------;
 	;		Plot frequency time
 	

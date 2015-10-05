@@ -68,8 +68,8 @@ pro dam_orfees_plot, save_orfees = save_orfees
 	dam_tim0 = anytim(file2time(time0), /time_only, /trun, /yoh)
 	dam_tim1 = anytim(file2time(time1), /time_only, /trun, /yoh)
 
-	;dam_spec = reverse(transpose(dam_spec))
-	;dam_spec = slide_backsub(dam_spec, dam_tim, 10.0*60.0)	
+	dam_spec = reverse(transpose(dam_spec))
+	dam_spec = slide_backsub(dam_spec, dam_tim, 10.0*60.0)	
 	
 	;***********************************;
 	;	   Read and process Orfees		

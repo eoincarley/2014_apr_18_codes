@@ -18,7 +18,7 @@ pro plot_spec, data, time, freqs, frange, bg, scl0=scl0, scl1=scl1
   				ytitle='Frequency (MHz)', $
   				title = 'Orfees and DAM', $
   				yr=[ frange[0], frange[1] ], $
-  				xrange = '2014-Apr-18 '+['12:55:00', '12:57:00'], $
+  				xrange = '2014-Apr-18 '+['12:40:00', '13:10:00'], $
   				/noerase, $
   				position = [0.05, 0.32, 0.95, 0.99]
   	
@@ -138,5 +138,18 @@ pro dam_orfees_oplot_v0, time_points = time_points, freq_points=freq_points
   	hline, 150.0, /data, color=255	
 
 	point, time_points, freq_points, /data
+
+
+	set_line_color
+	plots, time_points, 150.0, psym=1, color=1, /data, symsize=2
+	plots, time_points, 173.0, psym=1, color=1, /data, symsize=2
+	plots, time_points, 228.0, psym=1, color=1, /data, symsize=2
+	plots, time_points, 270.0, psym=1, color=1, /data, symsize=2
+	plots, time_points, 298.0, psym=1, color=1, /data, symsize=2
+	plots, time_points, 327.0, psym=1, color=1, /data, symsize=2
+	plots, time_points, 408.0, psym=1, color=1, /data, symsize=2
+	plots, time_points, 432.0, psym=1, color=1, /data, symsize=2
+	plots, time_points, 448.0, psym=1, color=1, /data, symsize=2
+
 
 END
