@@ -1,3 +1,20 @@
+pro setup_ps, name
+  
+   set_plot,'ps'
+   !p.font=0
+   !p.charsize=1.5
+   device, filename = name, $
+          /color, $
+          /helvetica, $
+          /inches, $
+          xsize=12, $
+          ysize=12, $
+          /encapsulate, $
+          yoffset=5
+
+end
+
+
 pro plot_nrh_aia_nda_orfees
 
 	loadct,0
@@ -6,15 +23,18 @@ pro plot_nrh_aia_nda_orfees
 	window, xs=1500, ys=1500, retain = 2
 	!p.charsize=2.0
 
-	dam_orfees_oplot_v0, time_points = time_points, freq_points=freq_points
+	dam_orfees_oplot, time_points = time_points, freq_points=freq_points
 	
 
-	;nrh_aia_imgs_all_freqs_20140418_v2, time_points, freq_points
+	nrh_aia_imgs_all_freqs_20140418_v2, time_points, freq_points
 
 	; Put in a version three here that produces a separate plot plotting
 	; all nrh+aia frequencies for the chosen times
 	;
-	nrh_aia_imgs_all_freqs_20140418_v3, time_points, freq_points
+	;nrh_aia_imgs_all_freqs_20140418_v3, time_points, freq_points, /post
+
+	;save, time_points, freq_points, filename='chosen_tf_for_aia_nrh_mosaic.sav', $
+		;description = 'These time and frequency points where chosen by point and click on Orfées spectrum.'
 	
 	;times = anytim(['2014-04-18T12:48:00.000', $
 	;			 '2014-04-18T12:49:00.000', $
@@ -103,7 +123,7 @@ pro nrh_aia_imgs_all_freqs_20140418_v2, times, freqs
 		;				  Plot diff image
 		;
 		pos = aia171_img_pos[*, *, i]
-		FOV = [15.0, 15.0]
+		FOV = [28.0, 28.0]
 		CENTER = [600.0, -300.0]
 		loadct, 0, /silent
 		plot_map, diff_map(map_aia, map_aia_pre), $
@@ -150,10 +170,14 @@ pro nrh_aia_imgs_all_freqs_20140418_v2, times, freqs
 
 		;			Define contour levels
 		max_val = max( (nrh_data) ,/nan) 									   
-		nlevels=5.0   
-		top_percent = 0.95
-		levels = (dindgen(nlevels)*(max_val - max_val*top_percent)/(nlevels-1.0)) $
-				+ max_val*top_percent  
+		nlevels=7.0   
+		top_percent = 0.8
+		;levels = (dindgen(nlevels)*(max_val - max_val*top_percent)/(nlevels-1.0)) $
+		;		+ max_val*top_percent  
+		levels = (dindgen(nlevels)*(8.9 - 7.22)/(nlevels-1.0)) $
+				+ 7.2
+
+		print, levels		
 
 		set_line_color
 		plot_map, nrh_map, $
@@ -164,10 +188,20 @@ pro nrh_aia_imgs_all_freqs_20140418_v2, times, freqs
 			/noyticks, $
 			/noaxes, $
 			thick=2, $
+			color=1;, $
+
+		plot_map, nrh_map, $
+			/overlay, $
+			/cont, $
+			levels=levels, $
+			/noxticks, $
+			/noyticks, $
+			/noaxes, $
+			thick=1, $
 			color=[i+2];, $
 
 		xyouts, pos[0]+0.01, pos[1]+0.01, 'NRH ' + string(nrh_hdr.freq, format='(I3)') + ' MHz', /normal, charsize=1.0, color=i+2
-		xyouts, pos[0]+0.01, pos[3]+0.01, t0+' UT', /normal, charsize=1.0
+		xyouts, pos[0]+0.01, pos[3]+0.01,  anytim(he_aia.date_obs, /cc, /trun, /time_only) +' UT', /normal, charsize=1.0
 
 
 			print, i
@@ -188,7 +222,7 @@ END
 ;
 ;-----------------------------------------------------------------;
 
-pro nrh_aia_imgs_all_freqs_20140418_v3, times, freqs
+pro nrh_aia_imgs_all_freqs_20140418_v3, times, freqs, postscript=postscript
 
 	;This version will plot the chosen points for all chosen frequencies in a mosaic.
 
@@ -237,7 +271,12 @@ pro nrh_aia_imgs_all_freqs_20140418_v3, times, freqs
     !p.background=255
     !p.color=0
     !p.charsize=2.0
-    window, 1, xs=1500, ys=1500
+    if keyword_set(postscript) then begin
+    	setup_ps, '~/Data/2014_Apr_18/aia_nrh_mosaic.eps'
+    endif else begin
+    	 window, 1, xs=1500, ys=1500
+    endelse	
+
 	cd,'~/Data/2014_Apr_18/radio/nrh/'
 	nrh_filenames = findfile('*.fts')
 	FOR j=0, n_elements(nrh_indices)-1 DO BEGIN
@@ -333,11 +372,21 @@ pro nrh_aia_imgs_all_freqs_20140418_v3, times, freqs
 				/noxticks, $
 				/noyticks, $
 				/noaxes, $
-				thick=2, $
-				color=[nrh_index];, $
+				thick=4, $
+				color=1;, $
 
-			xyouts, pos[0]+0.01, pos[1]+0.01, 'NRH ' + string(nrh_hdr.freq, format='(I3)') + ' MHz', /normal, charsize=1.0, color=nrh_index
-			xyouts, pos[0]+0.01, pos[3]+0.01, t0+' UT', /normal, charsize=1.0
+			plot_map, nrh_map, $
+				/overlay, $
+				/cont, $
+				levels=levels, $
+				/noxticks, $
+				/noyticks, $
+				/noaxes, $
+				thick=2, $
+				color=[j+2];, $
+
+			xyouts, pos[0]+0.01, pos[1]+0.01, 'NRH ' + string(nrh_hdr.freq, format='(I3)') + ' MHz', /normal, charsize=1.0, color=j+2
+			xyouts, pos[0]+0.01, pos[3]+0.01,  anytim(he_aia.date_obs, /cc, /trun, /time_only) +' UT', /normal, charsize=1.0
 
 
 			print, i
@@ -349,7 +398,12 @@ pro nrh_aia_imgs_all_freqs_20140418_v3, times, freqs
 
 		ENDFOR
 		
-	ENDFOR			
+	ENDFOR	
+
+	if keyword_set(postscript) then begin  
+		device, /close	
+		set_plot, 'x'	
+	endif	
 
 
 END

@@ -35,7 +35,7 @@ pro nrh_choose_centroid
 		;			Plot Total I
 		freq = nrh_hdr.FREQ
 		loadct, 3, /silent
-		FOV = [10, 10]
+		FOV = [15, 15]
 		CENTER = [700, -100]
 		plot_map, nrh_map, $
 			fov = FOV, $

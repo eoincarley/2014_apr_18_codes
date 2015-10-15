@@ -17,31 +17,24 @@ end
 
 pro plot_spec, data, time, freqs, frange, bg, scl0=scl0, scl1=scl1
 	
-  bg = 10.0*alog10(bg)	
-  data = 10.0*alog10(data)
-  
-  data = transpose(data)
-  bg_spec = data
-  FOR i = 0, n_elements(data[0,*])-1 DO bg_spec[*, i] = bg[i]
-  
-  data = data - bg_spec
-  
-  ;data = constbacksub(data, /auto)
-  data = data/max(data)
-  data = reverse(data, 2)
-  ;wset,0
-  spectro_plot, (data > (scl0) < scl1), $
+ 
+	print, 'Processing: '+string(freqs[0], format=string('(I4)')) + $
+			' to ' + $
+			string(freqs[n_elements(freqs)-1], format=string('(I4)'))+ ' MHz'
+
+	
+	spectro_plot, data > (scl0) < (scl1), $
   				time, $
   				reverse(freqs), $
   				/xs, $
   				/ys, $
   				/ylog, $
   				ytitle='Frequency (MHz)', $
+  				;title = 'Orfees and DAM', $
   				yr=[ frange[0], frange[1] ], $
   				xrange = '2014-Apr-18 '+['12:25:00', '13:20:00'], $
   				/noerase, $
-  				position = [0.11, 0.08, 0.95, 0.66], $
-  				xtitle='Start time: 2014-Apr-18 12:25:00 UT', $
+  				position = [0.11, 0.08, 0.95, 0.50], $
   				xticklen=-0.01, $
   				yticklen=-0.01
 			
@@ -69,10 +62,11 @@ pro plot_goes, t1, t2
 				xtit = ' ', $
 				color = 3, $
 				xrange = [x1, x2], $
+				XTICKFORMAT="(A1)", $
 				/xs, $
 				yrange = [1e-9,1e-3], $
 				/ylog, $
-				position = [0.11, 0.7, 0.95, 0.96], $
+				position = [0.11, 0.74, 0.95, 0.94], $
 				/normal, $
 				/noerase
 				
@@ -93,8 +87,10 @@ pro plot_goes, t1, t2
 				linestyle=[0,0], $
 				color=[3,5], $
 				box=0, $
-				pos = [0.12, 0.955], $
-				/normal
+				pos = [0.12, 0.945], $
+				/normal, $
+				charsize=0.8, $
+				thick=3
 
 END
 
@@ -122,7 +118,41 @@ function read_goes_txt, file
 END
 
 ;********************
+pro plot_fermi, date_start, date_end
 
+
+	FermiGBM_file= '~/Data/2014_apr_18/fermi/fermi_ctime_n0_20140418_v00.sav'   
+
+	restore, FermiGBM_file
+
+	utplot, anytim(ut, /utim), binned[0,*], $
+			/ylog, $
+			yrange=[1.e-4, 1.e4], $
+			position=[0.11, 0.54, 0.95, 0.74], $
+			;/nolabel, $
+			xtitle=' ', $
+			/noerase, $
+			timerange=[date_start, date_end], $
+			ytitle='counts [s!u-1!n cm!u-2!n keV!u-1!n]', $
+			/xs, $
+			color=6
+
+	for k=1,3 do outplot, anytim(ut, /utim), binned[k,*], col=k+2
+
+	eband_str = string(eband[0,*], format='(f5.1)')
+
+	legend, [eband_str[0]+' keV', eband_str[1]+' keV', eband_str[2]+' keV', eband_str[3]+' keV'], $
+			color = [6,3,4,5], $
+			linestyle = [0,0,0,0], $
+			box=0, $
+			charsize=0.8, $
+			pos = [0.77, 0.72], $
+			/normal, $
+			thick=3
+
+	xyouts, 0.79, 0.72, 'FERMI GBM', /normal, charsize=0.8
+
+END
 
 
 pro goes_dam_orfees, postscript=postscript
@@ -134,7 +164,7 @@ pro goes_dam_orfees, postscript=postscript
 		setup_ps, 'goes_dam_orfees_20140418.eps
 	endif else begin	
 		loadct, 0
-		window, xs=900, ys=1000, retain=2
+		window, xs=900, ys=1200, retain=2
 		!p.charsize=1.5
 	endelse
 			
@@ -145,6 +175,9 @@ pro goes_dam_orfees, postscript=postscript
 
 
 	plot_goes, time0, time1
+
+	plot_fermi, anytim(file2time(time0), /utim), anytim(file2time(time1), /utim)
+
 	loadct, 0
 	reverse_ct
 
@@ -153,6 +186,7 @@ pro goes_dam_orfees, postscript=postscript
 	;***********************************;
 	cd,'~/Data/2014_apr_18/radio/dam/'
 	restore, 'NDA_20140418_1221_left.sav', /verb
+	dam_freqs = freq
 	daml = spectro_l
 	timl = tim_l
 	
@@ -166,67 +200,29 @@ pro goes_dam_orfees, postscript=postscript
 	damr = [damr, spectro_r]
 	
 	dam_spec = damr + daml
-	dam_tim = timl
+	dam_time = timl
+
+	dam_spec = constbacksub(dam_spec, /auto)
 	
 	dam_tim0 = anytim(file2time(time0), /time_only, /trun, /yoh)
 	dam_tim1 = anytim(file2time(time1), /time_only, /trun, /yoh)
-	
-	
-	;***********************************;
-	;			Read Orfees		
-	;***********************************;	
-	cd,'~/Data/2014_apr_18/radio/orfees/'
-	null = mrdfits('orf20140418_101743.fts', 0, hdr0)
-	fbands = mrdfits('orf20140418_101743.fts', 1, hdr1)
-	freqs = [ fbands.FREQ_B1, $
-			  fbands.FREQ_B2, $
-			  fbands.FREQ_B3, $
-			  fbands.FREQ_B4, $
-			  fbands.FREQ_B5  ]
-	nfreqs = n_elements(freqs)			
-	
-	null = mrdfits('orf20140418_101743.fts', 2, hdr_bg, row=0)
-	tstart = anytim(file2time('20140418_101743'), /utim)
-	
-	;--------------------------------------------------;
-	;				 Choose time range
-	t0 = anytim(file2time(time0), /utim)
-	t1 = anytim(file2time(time1), /utim)
-	inc0 = (t0 - tstart)*10.0 ;Sampling time is 0.1 seconds
-	inc1 = (t1 - tstart)*10.0 ;Sampling time is 0.1 seconds
-	range = [inc0, inc1]
-	data = mrdfits('orf20140418_101743.fts', 2, hdr2, range = range)
-	
-	
-	;--------------------------------------------------;
-	;		   Choose time range for background
-	tbg0 = anytim(file2time('20140418_123000'), /utim)
-	tbg1 = anytim(file2time('20140418_123100'), /utim)
-	incbg0 = (tbg0 - tstart)*10.0 ;Sampling time is 0.1 seconds
-	incbg1 = (tbg1 - tstart)*10.0 ;Sampling time is 0.1 seconds
-	bg = mrdfits('orf20140418_101743.fts', 2, hdr2, range = [incbg0, incbg1])  
-	
-	tstart = anytim(file2time('20140418_000000'), /utim)
-	time_b1 = tstart + data.TIME_B1/1000.0
-	time_b2 = tstart + data.TIME_B2/1000.0 
-	time_b3 = tstart + data.TIME_B3/1000.0 
-	time_b4 = tstart + data.TIME_B4/1000.0 
-	time_b5 = tstart + data.TIME_B5/1000.0 
 
+	restore, '~/Data/2014_apr_18/radio/orfees/orf_20140418_bsubbed_min.sav', /verb
+	orf_spec = orfees_struct.spec
+	orf_time = orfees_struct.time
+	orf_freqs = orfees_struct.freq
+
+	
 	;***********************************;
-	;			Read Orfees		
+	;			   PLOT
 	;***********************************;	
-	scl_lwr = -0.1				;Lower intensity scale for the plots.
 	loadct, 74
 	reverse_ct
-	plot_spec, data.STOKESI_B1, time_b1, fbands.FREQ_B1, [freq0, freq1], average(bg.stokesi_b1, 1), scl0=scl_lwr, scl1=1.5
-	plot_spec, data.STOKESI_B2, time_b2, fbands.FREQ_B2, [freq0, freq1], average(bg.stokesi_b2, 1), scl0=scl_lwr, scl1=1.5
-	plot_spec, data.STOKESI_B3, time_b3, fbands.FREQ_B3, [freq0, freq1], average(bg.stokesi_b3, 1), scl0=scl_lwr, scl1=1.5
-	plot_spec, data.STOKESI_B4, time_b4, fbands.FREQ_B4, [freq0, freq1], average(bg.stokesi_b4, 1), scl0=scl_lwr, scl1=2.0
-	plot_spec, data.STOKESI_B5, time_b5, fbands.FREQ_B5, [freq0, freq1], average(bg.stokesi_b5, 1), scl0=-0.05, scl1=0.5
+	scl_lwr = -0.4				;Lower intensity scale for the plots.
+
+	plot_spec, dam_spec, dam_time, dam_freqs, [freq0, freq1], scl0=-20, scl1=100
 	
-	dam_spec = reverse(transpose(dam_spec))
-	plot_spec, dam_spec, dam_tim, reverse(freq), [freq0, freq1], average(dam_spec, 2), scl0=(-0.2), scl1=0.7
+	plot_spec, orf_spec, orf_time, orf_freqs, [freq0, freq1], scl0=-0.1, scl1=1.2
 	
 	if keyword_set(postscript) then begin
 		device, /close
