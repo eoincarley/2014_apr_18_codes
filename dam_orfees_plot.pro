@@ -8,7 +8,7 @@ pro setup_ps, name
           /helvetica, $
           /inches, $
           xsize=12, $
-          ysize=4, $
+          ysize=5, $
           bits_per_pixel=16, $
           /encapsulate, $
           yoffset=5
@@ -32,9 +32,11 @@ pro plot_spec, data, time, freqs, frange, scl0=scl0, scl1=scl1
   				ytitle='Frequency (MHz)', $
   				title = 'Orfees and DAM', $
   				yr=[ frange[0], frange[1] ], $
-  				xrange = '2014-Apr-18 '+['12:30:00', '13:20:00'], $
+  				xrange = '2014-Apr-18 '+['12:40:00', '13:05:00'], $
   				/noerase, $
-  				position = [0.09, 0.1, 0.95, 0.95]
+  				position = [0.15, 0.15, 0.95, 0.95], $
+  				xticklen = -0.015, $
+  				yticklen = -0.015
 		
   	
 END
@@ -48,18 +50,18 @@ pro dam_orfees_plot, save_orfees = save_orfees, postscript=postscript
 	;------------------------------------;
 	;			Window params
 	if keyword_set(postscript) then begin 
-		setup_ps, '~/Data/2014_apr_18/radio/orfees_mosaic_points.eps'
+		setup_ps, '~/orfees_points.eps'
 	endif else begin
 		loadct, 0
 		reverse_ct
-		window, 0, xs=1200, ys=1000, retain=2
+		window, 0, xs=1200, ys=600, retain=2
 		!p.charsize=1.5
 		!p.thick=1
 		!x.thick=1
 		!y.thick=1
 	endelse	
 
-	freq0 = 8
+	freq0 = 150
 	freq1 = 1000
 	time0 = '20140418_122500'
 	time1 = '20140418_132000'
@@ -137,7 +139,7 @@ pro dam_orfees_plot, save_orfees = save_orfees, postscript=postscript
 			description='Data produced using sliding 5 minute background. Data is logged.'
 	endif else begin
 		;--------------------------------------------------;
-		restore, 'orf_20140418_bsubbed_average.sav', /verb
+		restore, 'orf_20140418_bsubbed_min.sav', /verb
 		orf_spec = orfees_struct.spec
 		orf_time = orfees_struct.time
 		orf_freqs = orfees_struct.freq
@@ -153,24 +155,39 @@ pro dam_orfees_plot, save_orfees = save_orfees, postscript=postscript
 
 	plot_spec, dam_spec, dam_time, dam_freqs, [freq0, freq1], scl0=-20, scl1=100
 	
-	plot_spec, orf_spec, orf_time, orf_freqs, [freq0, freq1], scl0=-0.2, scl1=0.5
+	plot_spec, orf_spec, orf_time, orf_freqs, [freq0, freq1], scl0=0.0, scl1=1.4
 	
 	;x2png, '~/Data/cesra_school/dam_orfees_burst_20140418.png'
 
 	set_line_color
 	restore, '~/Data/2014_apr_18/radio/chosen_tf_for_aia_nrh_mosaic.sav', /verb;'ft_dam_orfees_20140418.sav', /verb
 	t = time_points
-	plots, t, 228.0, /data, psym=1, symsize=3, color=1, thick=7
-	plots, t, 228.0, /data, psym=1, symsize=3, color=5, thick=4
+	;plots, t, 228.0, /data, psym=1, symsize=3, color=1, thick=7
+	;plots, t, 228.0, /data, psym=1, symsize=3, color=5, thick=4
 
-	plots, t, 298.0, /data, psym=1, symsize=3, color=0, thick=7
-	plots, t, 298.0, /data, psym=1, symsize=3, color=4, thick=4
+	;plots, t, 298.0, /data, psym=1, symsize=3, color=0, thick=7
+	;plots, t, 298.0, /data, psym=1, symsize=3, color=4, thick=4
 
-	plots, t, 408.0, /data, psym=1, symsize=3, color=1, thick=7
-	plots, t, 408.0, /data, psym=1, symsize=3, color=3, thick=4
+	;plots, t, 408.0, /data, psym=1, symsize=3, color=1, thick=7
+	;plots, t, 408.0, /data, psym=1, symsize=3, color=3, thick=4
 
-	plots, t, 445.0, /data, psym=1, symsize=3, color=0, thick=7
-	plots, t, 445.0, /data, psym=1, symsize=3, color=2, thick=4
+	;plots, t, 445.0, /data, psym=1, symsize=3, color=0, thick=7
+	;plots, t, 445.0, /data, psym=1, symsize=3, color=2, thick=4
+
+
+
+	
+	times = anytim(['2014-04-18T12:51:20.000', $
+					'2014-04-18T12:51:30.000', $
+					'2014-04-18T12:51:40.000', $
+					'2014-04-18T12:53:09.000', $
+					'2014-04-18T12:54:00.000', $
+					'2014-04-18T12:56:10.000'])
+
+	freqs = [445.0, 432.0, 408.0, 327.0, 298.0, 270.0]
+
+	plots, times, freqs, /data, symsize=3, psym=1, thick=4, color=0
+	plots, times, freqs, /data, symsize=3, psym=1, thick=1, color=4
 
 	if keyword_set(postscript) then begin 
 		device, /close

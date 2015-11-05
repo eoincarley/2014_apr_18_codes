@@ -23,7 +23,7 @@ pro plot_spec, data, time, freqs, frange, scl0=scl0, scl1=scl1
 END
 
 
-pro dam_orfees_oplot, time_points = time_points, freq_points=freq_points
+pro dam_orfees_oplot, time_points = time_points, freq_points=freq_points, choose_points=choose_points
 
 	;------------------------------------;
 	;			Window params
@@ -133,11 +133,15 @@ pro dam_orfees_oplot, time_points = time_points, freq_points=freq_points
   	hline, 173.0, /data, color=255
   	hline, 150.0, /data, color=255	
 
-	;if keyword_set(time_points) then begin
-	point, time_points, freq_points, /data
+	if keyword_set(choose_points) then begin
+		point, time_points, freq_points, /data
+	endif else begin
+		set_line_color
+		plots, time_points, freq_points, /data, symsize=4, psym=1, thick=4, color=0
+		plots, time_points, freq_points, /data, symsize=4, psym=1, thick=4, color=4
+	endelse	
 	;endif
 
-	set_line_color
 	plots, time_points, 150.0, psym=1, color=1, /data
 
 	;---------------------------------;
