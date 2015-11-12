@@ -11,7 +11,7 @@ pro nrh_choose_centroid_calc_flux
 	window, 2, xs=700, ys=700, retain=2
 	!p.charsize=1.5
 	
-	Ray = 32.0								;Solar_R in nrh_hdr_array
+	Ray = 32.0								; Solar_R in nrh_hdr_array
 	domega = FLOAT(16 * 3E-4 /Ray)^2. 		; Solid angle. Below is a summation of pixels of Tb, which is effectively and integral
 											; of Tbx1unit pixels. We need an integral of TbxDomega. So after the summation of Tb
 											; we multiply by a factor of solid angle per pixel. 16 here is degrees of solar radius.
