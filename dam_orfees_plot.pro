@@ -32,7 +32,7 @@ pro plot_spec, data, time, freqs, frange, scl0=scl0, scl1=scl1
   				ytitle='Frequency (MHz)', $
   				title = 'Orfees and DAM', $
   				yr=[ frange[0], frange[1] ], $
-  				xrange = '2014-Apr-18 '+['12:40:00', '13:05:00'], $
+  				xrange = '2014-Apr-18 '+['12:54:30', '12:57:30'], $
   				/noerase, $
   				position = [0.15, 0.15, 0.95, 0.95], $
   				xticklen = -0.015, $
@@ -62,7 +62,7 @@ pro dam_orfees_plot, save_orfees = save_orfees, postscript=postscript
 	endelse	
 
 	freq0 = 150
-	freq1 = 1000
+	freq1 = 600
 	time0 = '20140418_122500'
 	time1 = '20140418_132000'
 
@@ -162,8 +162,8 @@ pro dam_orfees_plot, save_orfees = save_orfees, postscript=postscript
 	set_line_color
 	restore, '~/Data/2014_apr_18/radio/chosen_tf_for_aia_nrh_mosaic.sav', /verb;'ft_dam_orfees_20140418.sav', /verb
 	t = time_points
-	;plots, t, 228.0, /data, psym=1, symsize=3, color=1, thick=7
-	;plots, t, 228.0, /data, psym=1, symsize=3, color=5, thick=4
+	plots, t, 228.0, /data, psym=1, symsize=3, color=1, thick=7
+	plots, t, 228.0, /data, psym=1, symsize=3, color=5, thick=4
 
 	;plots, t, 298.0, /data, psym=1, symsize=3, color=0, thick=7
 	;plots, t, 298.0, /data, psym=1, symsize=3, color=4, thick=4

@@ -130,11 +130,11 @@ pro nrh_orfees_flux_plot, postscript=postscript
 
 	set_line_color
 
-	time0 = '20140418_123000'
-	time1 = '20140418_133000'
+	time0 = '20140418_125500'
+	time1 = '20140418_125800'
 
-	t0plot = anytim(file2time('20140418_123000'), /utim)
-	t1plot = anytim(file2time('20140418_131000'), /utim)
+	t0plot = anytim(file2time(time0), /utim)
+	t1plot = anytim(file2time(time1), /utim)
 
 	;-----------------------;
 	;	    Plot GOES
@@ -238,11 +238,12 @@ pro nrh_orfees_flux_plot, postscript=postscript
 
 	restore,'~/Data/2014_apr_18/radio/nrh/nrh_flux_20140418.sav', /verb
 
-	for i=0, (size(flux_struct))[2],2 do begin
+	for i=0,2 do begin; (size(flux_struct))[2],2 do begin
 
 		success = execute('data = flux_struct.'+ (tag_names(flux_struct))[i])
 		times = anytim(data[*, 0], /utim)
 		fluxes = data[*, 1]
+		stop
 		if i eq 0 then begin
 			utplot, times, smooth(fluxes, 2), $
 					/xs, $
@@ -251,7 +252,7 @@ pro nrh_orfees_flux_plot, postscript=postscript
 					color=0, $
 					/ylog, $
 					ytitle='Flux Density (SFU)', $
-					yr=[0.1, 600], $
+					yr=[10, 600], $
 					pos = [0.14, 0.07, 0.95, 0.30], $
 					/noerase;, $
 					;title='Nancay Radioheliograph'

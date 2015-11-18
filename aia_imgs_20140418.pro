@@ -19,12 +19,12 @@ pro aia_imgs_20140418, diff_img=diff_img
 	!p.charsize=1.5
 	!p.multi=[0,2,1]
 	FOV = [4.0, 4.0]
-	CENTER = [520.0, -200.0]
+	CENTER = [520.0, -225.0]
 	;FOV = [16.6, 16.6]
 	;CENTER = [500.0, -350.0]
 
 
-	FOR i = 10, n_elements(files)-1 DO BEGIN
+	FOR i = 175, n_elements(files)-1 DO BEGIN
 
 		;-------------------------------------------------;
 		;			 		Read data
@@ -92,8 +92,8 @@ pro aia_imgs_20140418, diff_img=diff_img
 			gcolor=255, $
 			grid_spacing=15.0	
 	
-
-	    x2png, folder + '/image_'+string(i-10, format='(I03)' )+'.png', /silent
+STOP
+	   ; x2png, folder + '/image_'+string(i-10, format='(I03)' )+'.png', /silent
 		
 		progress_percent, i, 10, n_elements(files)-1
 
@@ -102,6 +102,6 @@ pro aia_imgs_20140418, diff_img=diff_img
 	date = '20140418'
 	movie_type = '131A_diff_zoom_2'
 	cd, folder
-	spawn, 'ffmpeg -y -r 25 -i image_%03d.png -vb 50M SDO_AIA_'+date+'_'+movie_type+'.mpg'
+	;spawn, 'ffmpeg -y -r 25 -i image_%03d.png -vb 50M SDO_AIA_'+date+'_'+movie_type+'.mpg'
 
 END
