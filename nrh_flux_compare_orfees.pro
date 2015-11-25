@@ -1,4 +1,4 @@
-pro nrh_flux
+function nrh_flux_compare_orfees, time0, time1
 	
 	folder = '~/Data/2014_apr_18/radio/nrh/'
 	cd, folder
@@ -9,10 +9,9 @@ pro nrh_flux
 	window, 0, xs=400, ys=400, retain=2
 	window, 1, xs=400, ys=400, retain=2
 	loadct, 39, /silent
-	!p.charsize=1.5
 	
-	tstart = anytim(file2time('20140418_123420'), /utim)
-	tend = anytim(file2time('20140418_123440'), /utim)
+	tstart = anytim(file2time(time0), /utim)
+	tend = anytim(file2time(time1), /utim)
 
 	nseconds = tend - tstart
 	Ray = 32.0								; Solar_R in nrh_hdr_array
@@ -25,7 +24,7 @@ pro nrh_flux
 	k_B = 0.138				; Boltzmann constant k=1.38e-23, for SFU: K*e+22
 
 	FOR i=0, n_elements(nrh_filenames)-1 DO BEGIN							
-		
+		print, 'Calculating flux on '+nrh_filenames[i]
 		for j=0., nseconds do begin
 			loadct, 39, /silent
 			t0 = tstart + j*1.0D
@@ -39,8 +38,8 @@ pro nrh_flux
 					  hbeg=t0str;, $ 
 					  ;hend=t1str
 			
-			index2map, nrh_hdr, nrh_data, $
-					   nrh_map  
+			;;index2map, nrh_hdr, nrh_data, $
+		;		   nrh_map  
 
 			nrh_str_hdr = nrh_hdr
 			nrh_time = nrh_hdr.date_obs
@@ -50,43 +49,35 @@ pro nrh_flux
 			;
 			freq_tag = string(nrh_hdr.freq, format='(I03)')
 		
-			wset, 0
-			plot_map, nrh_map, $
-					  title='NRH '+freq_tag+' MHz '+$
-					  string( anytim( nrh_time, /yoh, /trun) )+' UT'		  
+		;	wset, 0
+		;	plot_map, nrh_map, $
+		;			  title='NRH '+freq_tag+' MHz '+$
+		;			  string( anytim( nrh_time, /yoh, /trun) )+' UT'		  
 			
-			set_line_color
-			plot_helio, nrh_times, $
-						/over, $
-						gstyle=1, $
-						gthick=1.0, $
-						gcolor=1, $
-						grid_spacing=15.0			
+		;	set_line_color
+		;	plot_helio, nrh_times, $
+		;				/over, $
+		;				gstyle=1, $
+		;				gthick=1.0, $
+		;				gcolor=1, $
+		;				grid_spacing=15.0			
 		
-			;x2png, 'nrh_'+freq_tag+'_'+time2file(nrh_times[i], /sec)+'_nr_scl.png'			
-			loadct, 39, /silent
-			;cgcolorbar, range = [min(nrh_map.data), max(nrh_map.data)], $
-			;		/vertical, $
-			;		/right, $
-			;		color=255, $
-			;		/ylog, $
-			;		pos = [0.87, 0.15, 0.88, 0.85], $
-			;		title = 'Brightness Temperature (log(T[K]))', $
-			;		FORMAT = '(e10.1)'
-
+				
+		;	loadct, 39, /silent
+			
 			;-------------------------------------;
 			;	   Now plot raw data structure
 			;
-			nrh_data = nrh_map.data
-			data_section = nrh_data[60:100, 35:65]
+			;nrh_data = nrh_map.data
+			data_section = nrh_data[75:110, 35:65]
 			indices = where(data_section ge max(data_section)*0.5)
 			xy_indices = array_indices(data_section, indices)
-			wset, 1
+		;	wset, 1
 
-			plot_image, data_section > 1e5
+		;	plot_image, data_section > 1e5
 			
-			loadct, 0
-			plots, xy_indices[0, *], xy_indices[1, *], /data, psym=1, color=255
+		;	loadct, 0
+		;	plots, xy_indices[0, *], xy_indices[1, *], /data, psym=1, color=255
 
 			total_Tb = TOTAL(data_section[indices])		;summing over specified source area
 			freq = nrh_hdr.freq * 1e6			;calculate flux
@@ -94,11 +85,10 @@ pro nrh_flux
 			constant = (2.* k_B * domega) / (lambda^2.)
 			flux = constant * total_Tb	; in SFU
 
-			print, 'Source Flux: '+string(flux)+' (sfu)'
+			;print, 'Source Flux: '+string(flux)+' (sfu)'
 
 			if j eq 0. then fluxes = flux else fluxes = [fluxes, flux]
 			if j eq 0. then times = nrh_time else times = [times, nrh_time]
-
 		endfor			
 
 		times = anytim(times, /utim)
@@ -106,32 +96,7 @@ pro nrh_flux
 			else flux_struct = add_tag(flux_struct, [[times], [fluxes]], 'nrh_'+freq_tag) 
 	
 	ENDFOR
-
-	save, flux_struct, filename='flux_density_spectrum_typeIII_0.sav'
-
-	for i=0, n_elements((flux_struct.nrh_150)[*, 1])-1 do begin
-		time_index=i
-		freqs = [150, 173, 228, 270, 298, 327, 408, 432, 445]
-		flux =  [ (flux_struct.nrh_150)[time_index, 1], $
-				  (flux_struct.nrh_173)[time_index, 1], $
-				  (flux_struct.nrh_228)[time_index, 1], $
-				  (flux_struct.nrh_298)[time_index, 1], $
-				  (flux_struct.nrh_327)[time_index, 1], $
-				  (flux_struct.nrh_408)[time_index, 1], $
-				  (flux_struct.nrh_432)[time_index, 1], $
-				  (flux_struct.nrh_445)[time_index, 1] ]
-
-		plot, freqs, flux, $
-				/xs, $
-				/ys, $
-				yr=[0.1, 1000.0], $
-				/ylog, $
-				xtitle='Frequency (MHz)', $
-				ytitle='Flux Density (SFU)'
-
-		wait, 0.5		
-	endfor			
-	
-
-	STOP
+	save, flux_struct, filename='flux_density_spectrum.sav', description='From type IIIs to type IV.'
+	return, flux_struct
+		
 END

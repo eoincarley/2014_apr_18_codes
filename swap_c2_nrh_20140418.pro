@@ -17,7 +17,7 @@ end
 
 pro swap_c2_nrh_20140418, postscript = postscript
 
-  ; Code to combine AIA, NRH and C2 observations of eruptive event on 2014-Apr-18
+    ; Code to combine AIA, NRH and C2 observations of eruptive event on 2014-Apr-18
     if keyword_set(postscript) then begin
         setup_ps, '~/Data/2014_apr_18/swap_nrh_c2_20140418_2.eps
     endif else begin
@@ -26,7 +26,7 @@ pro swap_c2_nrh_20140418, postscript = postscript
         window, 0, xs=winsz, ys=winsz
     endelse  
 
-    loadct, 57
+    loadct, 57 ;33
     FOV = [5000/60.0, 5000/60.0]
     CENTER = [1000.0, -1000.0]
 
@@ -67,12 +67,12 @@ pro swap_c2_nrh_20140418, postscript = postscript
   
     map_new = merge_map(c2map, swap_map, /add, use_min=0)
 
-    tstart = anytim('2014-04-18T13:11:46', /utim)
+    tstart = anytim('2014-04-18T13:11:35', /utim)
     ;for i=0, 180 do begin
         ;tstart = tstart+i
 
     plot_map, map_new, $
-        dmin = -3, $
+        dmin = -4, $
         dmax = 3, $
         fov=FOV, $
         center = CENTER, $
@@ -92,6 +92,9 @@ pro swap_c2_nrh_20140418, postscript = postscript
     xyouts, 0.16, 0.185, 'SWAP '+ anytim(hdr.date_obs, /cc, /trun)+' UT', /normal
     xyouts, 0.16, 0.21, 'LASCO C2: '+ anytim(c2hdr.date_obs, /cc, /trun) +' UT', /normal
 
+
+    restore, '~/Data/2014_apr_18/white_light/cme_back_extrpln_20140418.sav'
+    plots, xpoints, ypoints, /data, color=1, thick=3
     ;endfor      
     if keyword_set(postscript) then begin		
         device, /close

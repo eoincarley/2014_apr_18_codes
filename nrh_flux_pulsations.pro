@@ -1,4 +1,6 @@
-pro nrh_flux
+pro nrh_flux_pulsations
+
+	; Calculate the flux of remote sources during the pulsations of 2014-04-18.
 	
 	folder = '~/Data/2014_apr_18/radio/nrh/'
 	cd, folder
@@ -11,8 +13,8 @@ pro nrh_flux
 	loadct, 39, /silent
 	!p.charsize=1.5
 	
-	tstart = anytim(file2time('20140418_123420'), /utim)
-	tend = anytim(file2time('20140418_123440'), /utim)
+	tstart = anytim(file2time('20140418_125400'), /utim)
+	tend = anytim(file2time('20140418_125800'), /utim)
 
 	nseconds = tend - tstart
 	Ray = 32.0								; Solar_R in nrh_hdr_array
@@ -24,11 +26,12 @@ pro nrh_flux
 	c = 299792458. 			; Speed of light in m/s
 	k_B = 0.138				; Boltzmann constant k=1.38e-23, for SFU: K*e+22
 
-	FOR i=0, n_elements(nrh_filenames)-1 DO BEGIN							
-		
+	;;FOR i=0, n_elements(nrh_filenames)-1 DO BEGIN							
+		i=1
 		for j=0., nseconds do begin
 			loadct, 39, /silent
 			t0 = tstart + j*1.0D
+		    ;tend = anytim(file2time('20140418_131500'), /utim)
 
 			t0str = anytim(t0, /yoh, /trun, /time_only)
 			;t1str = anytim(tend, /yoh, /trun, /time_only)
@@ -65,30 +68,35 @@ pro nrh_flux
 		
 			;x2png, 'nrh_'+freq_tag+'_'+time2file(nrh_times[i], /sec)+'_nr_scl.png'			
 			loadct, 39, /silent
-			;cgcolorbar, range = [min(nrh_map.data), max(nrh_map.data)], $
-			;		/vertical, $
-			;		/right, $
-			;		color=255, $
-			;		/ylog, $
-			;		pos = [0.87, 0.15, 0.88, 0.85], $
-			;		title = 'Brightness Temperature (log(T[K]))', $
-			;		FORMAT = '(e10.1)'
+			cgcolorbar, range = [min(nrh_map.data), max(nrh_map.data)], $
+					/vertical, $
+					/right, $
+					color=255, $
+					/ylog, $
+					pos = [0.87, 0.15, 0.88, 0.85], $
+					title = 'Brightness Temperature (log(T[K]))', $
+					FORMAT = '(e10.1)'
 
-			;-------------------------------------;
+			;--------------------------------------;
 			;	   Now plot raw data structure
 			;
 			nrh_data = nrh_map.data
-			data_section = nrh_data[60:100, 35:65]
+			data_section = nrh_data[40:100, 10:70]
 			indices = where(data_section ge max(data_section)*0.5)
 			xy_indices = array_indices(data_section, indices)
 			wset, 1
-
 			plot_image, data_section > 1e5
-			
-			loadct, 0
-			plots, xy_indices[0, *], xy_indices[1, *], /data, psym=1, color=255
 
-			total_Tb = TOTAL(data_section[indices])		;summing over specified source area
+			if j eq 0 then begin
+				print, 'Choose source region '
+				point, x, y, /data
+			endif			
+			source_section  = data_section[ x[0]:x[1], y[0]:y[1]]	
+
+			;loadct, 0
+			;plots, xy_indices[0, *], xy_indices[1, *], /data, psym=1, color=255
+
+			total_Tb = TOTAL(source_section)		;summing over specified source area
 			freq = nrh_hdr.freq * 1e6			;calculate flux
 			lambda = c / freq
 			constant = (2.* k_B * domega) / (lambda^2.)
@@ -101,37 +109,19 @@ pro nrh_flux
 
 		endfor			
 
+		window, 2, xs=1000, ys=400
 		times = anytim(times, /utim)
+		utplot, times, fluxes, $
+			ytitle = 'Flux (SFU)', $
+			/xs, $
+			/ys, $
+			/ylog
+
+STOP
 		if i eq 0 then flux_struct = create_struct(name='nrh_fluxes', 'nrh_'+freq_tag, [[times], [fluxes]] ) $
 			else flux_struct = add_tag(flux_struct, [[times], [fluxes]], 'nrh_'+freq_tag) 
 	
-	ENDFOR
-
-	save, flux_struct, filename='flux_density_spectrum_typeIII_0.sav'
-
-	for i=0, n_elements((flux_struct.nrh_150)[*, 1])-1 do begin
-		time_index=i
-		freqs = [150, 173, 228, 270, 298, 327, 408, 432, 445]
-		flux =  [ (flux_struct.nrh_150)[time_index, 1], $
-				  (flux_struct.nrh_173)[time_index, 1], $
-				  (flux_struct.nrh_228)[time_index, 1], $
-				  (flux_struct.nrh_298)[time_index, 1], $
-				  (flux_struct.nrh_327)[time_index, 1], $
-				  (flux_struct.nrh_408)[time_index, 1], $
-				  (flux_struct.nrh_432)[time_index, 1], $
-				  (flux_struct.nrh_445)[time_index, 1] ]
-
-		plot, freqs, flux, $
-				/xs, $
-				/ys, $
-				yr=[0.1, 1000.0], $
-				/ylog, $
-				xtitle='Frequency (MHz)', $
-				ytitle='Flux Density (SFU)'
-
-		wait, 0.5		
-	endfor			
-	
+	;ENDFOR
 
 	STOP
 END
