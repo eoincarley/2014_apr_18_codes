@@ -38,46 +38,45 @@ function nrh_flux_compare_orfees, time0, time1
 					  hbeg=t0str;, $ 
 					  ;hend=t1str
 			
-			;;index2map, nrh_hdr, nrh_data, $
-		;		   nrh_map  
+			;index2map, nrh_hdr, nrh_data, $
+			;	   nrh_map  
 
 			nrh_str_hdr = nrh_hdr
 			nrh_time = nrh_hdr.date_obs
+			freq_tag = string(nrh_hdr.freq, format='(I03)')
 			
 			;--------------------------------------------------------;
 			;					Plot Total I
 			;
-			freq_tag = string(nrh_hdr.freq, format='(I03)')
-		
-		;	wset, 0
-		;	plot_map, nrh_map, $
-		;			  title='NRH '+freq_tag+' MHz '+$
-		;			  string( anytim( nrh_time, /yoh, /trun) )+' UT'		  
+			;wset, 0
+			;plot_map, nrh_map, $
+			;		  title='NRH '+freq_tag+' MHz '+$
+			;		  string( anytim( nrh_time, /yoh, /trun) )+' UT'		  
 			
-		;	set_line_color
-		;	plot_helio, nrh_times, $
-		;				/over, $
-		;				gstyle=1, $
-		;				gthick=1.0, $
-		;				gcolor=1, $
-		;				grid_spacing=15.0			
-		
+			;set_line_color
+			;plot_helio, nrh_times, $
+			;			/over, $
+			;			gstyle=1, $
+			;			gthick=1.0, $
+			;			gcolor=1, $
+			;			grid_spacing=15.0			
+	
 				
-		;	loadct, 39, /silent
+			;loadct, 39, /silent
 			
 			;-------------------------------------;
 			;	   Now plot raw data structure
 			;
 			;nrh_data = nrh_map.data
-			data_section = nrh_data[75:110, 35:65]
+			data_section = nrh_data[75:120, 30:70]
 			indices = where(data_section ge max(data_section)*0.5)
 			xy_indices = array_indices(data_section, indices)
-		;	wset, 1
-
-		;	plot_image, data_section > 1e5
 			
-		;	loadct, 0
-		;	plots, xy_indices[0, *], xy_indices[1, *], /data, psym=1, color=255
+			;wset, 1
+			;plot_image, data_section > 1e5
+			
+			;loadct, 0
+			;plots, xy_indices[0, *], xy_indices[1, *], /data, psym=1, color=255
 
 			total_Tb = TOTAL(data_section[indices])		;summing over specified source area
 			freq = nrh_hdr.freq * 1e6			;calculate flux

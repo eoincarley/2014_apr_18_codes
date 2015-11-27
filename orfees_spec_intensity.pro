@@ -34,7 +34,7 @@ pro orfees_spec_intensity
 	freq0 = 150
 	freq1 = 450
 	time0 = '20140418_123420'
-	time1 = '20140418_124900'
+	time1 = '20140418_123520'
 	time0_typeIII = anytim(file2time(time0), /utim)
 	time1_typeIII = anytim(file2time(time1), /utim)
 	date_string = time2file(file2time(time0), /date)
@@ -51,8 +51,8 @@ pro orfees_spec_intensity
 	;-------------------------------------------------;
 	;		     	Get NRH flux
 	;
-	;flux_struct = nrh_flux_compare_orfees(time0, time1)
-	restore, '~/Data/2014_apr_18/radio/nrh/flux_density_spectrum.sav'
+	flux_struct = nrh_flux_compare_orfees(time0, time1)
+	;restore, '~/Data/2014_apr_18/radio/nrh/flux_density_spectrum.sav'
 
 
 	;-------------------------------------------------;
@@ -65,7 +65,7 @@ pro orfees_spec_intensity
 	for i=0., nseconds-1 do begin
 
 		loadct, 0, /silent
-		window, 0, xs=400, ys=800, retain=2
+		window, 0, xs=1000, ys=800, retain=2
 
 		time0_typeIII = time0_typeIII + 1.
 		;print, anytim(time0_typeIII, /cc)
@@ -79,7 +79,7 @@ pro orfees_spec_intensity
 			;/xlog, $
 			xr=[freq0, freq1], $
 			/ylog, $
-			yr=[1e-2, 1], $
+			yr=[1e-2, 10], $
 			ytitle = 'Intensity (arbitrary)', $
 			xtitle = 'Frequency (MHz)', $
 			title = 'Orfees '+anytim(orf_time[orfees_index], /cc), $
@@ -102,7 +102,7 @@ pro orfees_spec_intensity
 		plot, freqs, flux, $
 				/xs, $
 				/ys, $
-				yr=[0.1, 100.0], $
+				yr=[0.1, 1000.0], $
 				xr=[freq0, freq1], $
 				/ylog, $
 				xtitle='Frequency (MHz)', $

@@ -7,8 +7,8 @@ pro setup_ps, name
           /color, $
           /helvetica, $
           /inches, $
-          xsize=7, $
-          ysize=7, $
+          xsize=9, $
+          ysize=8, $
           bits_per_pixel=16, $
           /encapsulate, $
           yoffset=5
@@ -65,7 +65,8 @@ pro nrh_plot_xy_motion, postscript=postscript
 		center = CENTER, $
 		dmin = 0, $
 		dmax = 300, $
-		title=' '
+		title=' ', $
+		pos = [0.1, 0.15, 0.8, 0.95]
 		  
 	plot_helio, nrh_times, $
 				/over, $
@@ -96,36 +97,36 @@ pro nrh_plot_xy_motion, postscript=postscript
 
 		sym = symbol[j]
 		
-		step=20		; This step size (or 30) produces a speed that mathces what it should be e.g., 
+		step=1		; This step size (or 30) produces a speed that mathces what it should be e.g., 
 					; simply taking the first and last points as displacements and a time of 500 seconds gives ~360 km/s
 		for i=0, n_elements(xarcs)-(step+1), step do begin
 			
 				color = interpol(colors, tcolors, anytim(times[i], /utim))
 				plots, xarcs[i], yarcs[i], color=color, psym=sym, symsize=1.2
 			
-				x1 = xarcs[i]
-				x2 = xarcs[i+step]
-				y1 = yarcs[i]
-				y2 = yarcs[i+step]
-				dt = anytim(times[i+step], /utim) - anytim(times[i], /utim)
+				;x1 = xarcs[i]
+				;x2 = xarcs[i+step]
+				;y1 = yarcs[i]
+				;y2 = yarcs[i+step]
+				;dt = anytim(times[i+step], /utim) - anytim(times[i], /utim)
 
-				displ_arcs = sqrt( (x2-x1)^2 + (y2-y1)^2 )
-				displ_degs = displ_arcs/3600.0
-				displ = AU*tan(displ_degs*!dtor)	;km
+				;displ_arcs = sqrt( (x2-x1)^2 + (y2-y1)^2 )
+				;displ_degs = displ_arcs/3600.0
+				;displ = AU*tan(displ_degs*!dtor)	;km
 
-				if j eq 0 and i eq 0 then begin
-					displs = displ 
-					times_tot = times[i] 
-				endif else begin
+				;if j eq 0 and i eq 0 then begin
+				;	displs = displ 
+				;	times_tot = times[i] 
+				;endif else begin
 
-					if times[i] gt times_tot[n_elements(times_tot)-1] then begin
-						displs = [displs, displs[n_elements(displs)-1]+displ]
-						times_tot = [times_tot, times[i]]
-					endif
-						
-				endelse	
+				;	if times[i] gt times_tot[n_elements(times_tot)-1] then begin
+				;		displs = [displs, displs[n_elements(displs)-1]+displ]
+				;		times_tot = [times_tot, times[i]]
+				;	endif
+				;		
+				;endelse	
 
-			wait, 0.1
+			;wait, 0.1
 		endfor	 
 
 
@@ -134,7 +135,7 @@ pro nrh_plot_xy_motion, postscript=postscript
 	endfor	
 
 	set_line_color
-	legend, reverse(freqs), psym=reverse(symbol), box=0, /top, /left, color=0, charsize=0.8
+	legend, reverse(freqs), psym=reverse(symbol), box=0, /bottom, /left, color=0, charsize=1.5
 
 	tims = interpol(tcolors, colors, [0,50,100,150,200,250])
 	tims = anytim(tims, /cc, /time, /trun)
@@ -145,8 +146,8 @@ pro nrh_plot_xy_motion, postscript=postscript
 			/vertical, $
 			/right, $
 			color=0, $
-			charsize=0.8, $
-			pos = [0.87, 0.15, 0.88, 0.85], $
+			charsize=1.5, $
+			pos = [0.82, 0.15, 0.83, 0.85], $
 			title = 'Time on 2014-Apr-18 (UT)';, $
 			;FORMAT = '(e10.1)'
 	
@@ -154,7 +155,7 @@ pro nrh_plot_xy_motion, postscript=postscript
 		device, /close
 		set_plot, 'x'
 	endif	
-
+STOP
 	window, 1, xs=600, ys=600
 	utplot, times_tot, displs, $
 			ytitle='Displacement (km)', $

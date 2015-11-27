@@ -8,10 +8,10 @@ pro stamp_date, wave1, wave2, wave3
    xyouts, xpos_aia_lab, ypos_aia_lab+0.08, wave1, alignment=0, /normal, color = 3, charthick=0.5, charsize=1.3
    
    xyouts, xpos_aia_lab, ypos_aia_lab+0.035, wave2, alignment=0, /normal, color = 0, charthick=5, charsize=1.3
-   xyouts, xpos_aia_lab, ypos_aia_lab+0.035, wave2, alignment=0, /normal, color = 10, charthick=2, charsize=1.3
+   xyouts, xpos_aia_lab, ypos_aia_lab+0.035, wave2, alignment=0, /normal, color = 4, charthick=2, charsize=1.3
    
    xyouts, xpos_aia_lab, ypos_aia_lab, wave3, alignment=0, /normal, color = 0, charthick=5, charsize=1.3
-   xyouts, xpos_aia_lab, ypos_aia_lab, wave3, alignment=0, /normal, color = 4, charthick=2, charsize=1.3
+   xyouts, xpos_aia_lab, ypos_aia_lab, wave3, alignment=0, /normal, color = 10, charthick=2, charsize=1.3
 
 END
 
@@ -20,7 +20,7 @@ pro aia_dt_plot_three_color, ps=ps, choose_points=choose_points
 	;Code to plot the distance time maps of from AIA
 
 	!p.font = 0
-	;!p.charsize = 0.8
+	!p.charsize = 1.0
 	;!p.charthick = 0.5
 
 	cd, '~/Data/2014_Apr_18/sdo/'
@@ -42,7 +42,7 @@ pro aia_dt_plot_three_color, ps=ps, choose_points=choose_points
 
 	min_scl = -1
 	max_scl = 0.05
-	;------------------------------------------------;
+	;-------------------------------------------;
 	;				Plot 171
 	;
 	angle = '035'

@@ -36,29 +36,28 @@ pro dam_orfees_oplot, time_points = time_points, freq_points=freq_points, choose
 	;***********************************;
 	;		Read and process DAM		
 	;***********************************;
-	cd,'~/Data/2014_apr_18/radio/dam/'
-	restore, 'NDA_20140418_1221_left.sav', /verb
-	dam_freqs = freq
-	daml = spectro_l
-	timl = tim_l
-	
-	restore, 'NDA_20140418_1251_left.sav', /verb
-	daml = [daml, spectro_l]
-	timl = [timl, tim_l]
-	
-	restore, 'NDA_20140418_1221_right.sav', /verb
-	damr = spectro_r
-	restore, 'NDA_20140418_1251_right.sav', /verb
-	damr = [damr, spectro_r]
+
+	cd, dam_folder
+	restore, 'NDA_'+date_string+'_1151.sav', /verb
+	dam_freqs = nda_struct.freq
+	daml = nda_struct.spec_left
+	damr = nda_struct.spec_right
+	times = nda_struct.times
+
+	restore, 'NDA_'+date_string+'_1251.sav', /verb
+	daml = [daml, nda_struct.spec_left]
+	damr = [damr, nda_struct.spec_right]
+	times = [times, nda_struct.times]
 	
 	dam_spec = damr + daml
-	dam_time = timl
+	dam_time = times
 	
 	dam_tim0 = anytim(file2time(time0), /time_only, /trun, /yoh)
 	dam_tim1 = anytim(file2time(time1), /time_only, /trun, /yoh)
 
-	;dam_spec = slide_backsub(dam_spec, dam_time, 10.0*60.0, /average)	
+		;dam_spec = slide_backsub(dam_spec, dam_time, 10.0*60.0, /average)	
 	dam_spec = constbacksub(dam_spec, /auto)
+
 
 	;***********************************;
 	;	   Read and process Orfees		
