@@ -87,7 +87,7 @@ pro plot_fermi, date_start, date_end
 
 	utplot, anytim(ut, /utim), binned[0,*], $
 			/ylog, $
-			yrange=[1.e-4, 1.e4], $
+			yrange=[1.e-2, 1.e2], $
 			position=[0.14,0.54,0.95,0.78], $
 			XTICKFORMAT="(A1)", $
 			;/nolabel, $
@@ -130,8 +130,8 @@ pro nrh_orfees_flux_plot, postscript=postscript
 
 	set_line_color
 
-	time0 = '20140418_125500'
-	time1 = '20140418_125800'
+	time0 = '20140418_124500'
+	time1 = '20140418_130500'
 
 	t0plot = anytim(file2time(time0), /utim)
 	t1plot = anytim(file2time(time1), /utim)
@@ -196,7 +196,7 @@ pro nrh_orfees_flux_plot, postscript=postscript
 	;		/xs, $
 	;		/ys
 
-	nrh_freqs = [150.0, 173.0, 228.0, 270.0, 293.0, 327.0, 408.0, 432.0, 405.0]
+	nrh_freqs = [228.0, 270.0] ;	[150.0, 173.0, 228.0, 270.0, 293.0, 327.0, 408.0, 432.0, 405.0]
 	orfees_fluxes = dblarr(n_elements(time_b1), n_elements(nrh_freqs))
 	indices = nrh_freqs
 	for i=0, n_elements(nrh_freqs)-1 do begin
@@ -205,7 +205,7 @@ pro nrh_orfees_flux_plot, postscript=postscript
 	endfor	
 
 	times = time_b1
-	for i=0, n_elements(nrh_freqs)-1,2 do begin
+	for i=0, n_elements(nrh_freqs)-1,1 do begin
 
 		fluxes = orfees_fluxes[*, i]
 
@@ -214,6 +214,7 @@ pro nrh_orfees_flux_plot, postscript=postscript
 					/xs, $
 					/ys, $
 					xr = [t0plot, t1plot], $
+					yr=[100, 1e4], $
 					/ylog, $
 					color=0, $
 					pos = [0.14, 0.30, 0.95, 0.54], $
@@ -243,7 +244,7 @@ pro nrh_orfees_flux_plot, postscript=postscript
 		success = execute('data = flux_struct.'+ (tag_names(flux_struct))[i])
 		times = anytim(data[*, 0], /utim)
 		fluxes = data[*, 1]
-		stop
+
 		if i eq 0 then begin
 			utplot, times, smooth(fluxes, 2), $
 					/xs, $
@@ -252,7 +253,7 @@ pro nrh_orfees_flux_plot, postscript=postscript
 					color=0, $
 					/ylog, $
 					ytitle='Flux Density (SFU)', $
-					yr=[10, 600], $
+					yr=[0.1, 600], $
 					pos = [0.14, 0.07, 0.95, 0.30], $
 					/noerase;, $
 					;title='Nancay Radioheliograph'

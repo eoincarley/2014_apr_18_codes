@@ -17,14 +17,14 @@ end
 
 pro plot_nrh_aia_nda_orfees
 
+	; A better version of this code is now available at plot_nrh_aia_nda_mosaic.
+
 	loadct,0
 	!p.color=0
 	!p.background=255
 	window, xs=1500, ys=1500, retain = 2
 	!p.charsize=2.0
 
-	;
-	
 
 	;nrh_aia_imgs_all_freqs_20140418_v2, time_points, freq_points
 
@@ -36,22 +36,21 @@ pro plot_nrh_aia_nda_orfees
 	;save, time_points, freq_points, filename='chosen_tf_for_aia_nrh_mosaic.sav', $
 		;description = 'These time and frequency points where chosen by point and click on Orfées spectrum.'
 	
-	times = anytim(['2014-04-18T12:51:00.000', $
-				 '2014-04-18T12:51:20.000', $
-				 '2014-04-18T12:51:40.000', $
-				 '2014-04-18T12:53:09.000', $
-				 '2014-04-18T12:54:00.000', $
-				 '2014-04-18T12:56:10.000']);, $
+	;times = anytim(['2014-04-18T12:51:00.000', $
+	;			 '2014-04-18T12:51:20.000', $
+	;			 '2014-04-18T12:51:40.000', $
+	;			 '2014-04-18T12:53:09.000', $
+	;			 '2014-04-18T12:54:00.000', $
+	;			 '2014-04-18T12:56:10.000']);, $
 				 ;'2014-04-18T12:59:30.000' ], /utim)
 
-	freqs = [445.0, 432.0, 408.0, 327.0, 298.0, 270.0]
+	;freqs = [445.0, 432.0, 408.0, 327.0, 298.0, 270.0]
 
-	dam_orfees_oplot, time_points = times, freq_points = freqs;, /choose
+	dam_orfees_oplot, time_points = times, freq_points = freqs, /choose
 
 	nrh_aia_imgs_all_freqs_20140418_v2, times, freqs
 
 	
-
 
 END
 
@@ -64,6 +63,7 @@ END
 pro nrh_aia_imgs_all_freqs_20140418_v2, times, freqs
 
 	; This version will plot the chosen points underneath the dynmaic spectrum
+	
 	; Set image positions
 	ybottom = 0.05
 	ytop = 0.25
