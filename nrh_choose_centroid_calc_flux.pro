@@ -4,11 +4,10 @@ pro nrh_choose_centroid_calc_flux
 
 	cd, '~/Data/2014_apr_18/radio/nrh'
 	filenames = findfile('*.fts')
-	
 
-	window, 0, xs=700, ys=700, retain=2
-	window, 1, xs=700, ys=700, retain=2
-	window, 2, xs=700, ys=700, retain=2
+	window, 0, xs=400, ys=400, retain=2
+	window, 1, xs=400, ys=400, retain=2
+	window, 2, xs=400, ys=400, retain=2
 	!p.charsize=1.5
 	
 	Ray = 32.0								; Solar_R in nrh_hdr_array
@@ -20,12 +19,15 @@ pro nrh_choose_centroid_calc_flux
 	c = 299792458. 			;speed of light in m/s
 	k_B = 0.138				;Boltzmann constant k=1.38e-23, for SFU: K*e+22
 
-	nrh_index = [4,3,2,1,0]
+	nrh_index = [3];,3,2]			;[4,3,2,1,0]
+
 	for k=0, n_elements(nrh_index)-1 do begin
-		tstart = anytim(file2time('20140418_124200'), /utim)
-		tstop = anytim(file2time('20140418_125800'), /utim) 
+
+		tstart = anytim(file2time('20140418_124700'), /utim)
+		tstop = anytim(file2time('20140418_125600'), /utim) 
 		nseconds = tstop - tstart
 		i=0
+
 		while tstart lt tstop do begin
 
 			t0str = anytim(tstart, /yoh, /trun, /time_only)
@@ -47,7 +49,7 @@ pro nrh_choose_centroid_calc_flux
 			wset, 0
 			freq = nrh_hdr.FREQ
 			loadct, 3, /silent
-			FOV = [15, 15]
+			FOV = [16, 16]
 			CENTER = [700, -100]
 			plot_map, nrh_map, $
 				fov = FOV, $
@@ -97,56 +99,67 @@ pro nrh_choose_centroid_calc_flux
 			nrh_data = nrh_map.data
 			data_section = nrh_data[x0:x1, y0:y1]
 			plot_image, data_section > 1e5
-
+			max_tb = max(data_section)
 
 			;-------------------------------;
+			;								;
 			;	   Choose data points	    ;
 			;								;
 			cursor, x, y, /data
-			x0 = x-3 >0
-			x1 = x+3
-			y0 = y-3 >0
-			y1 = y+3
+			x0 = x-2 > 0	;3 for AR source
+			x1 = x+2
+			y0 = y-2 > 0
+			y1 = y+2
 			source_section = data_section[x0:x1, y0:y1]
 
 			wset, 2
 			plot_image, source_section > 1e5
 
-		
-			index_max = where(source_section ge max(source_section))
+			; Find the max point and mark with a diamond
+			index_max = where(source_section eq max(source_section))
 			xy_max = array_indices(source_section, index_max)
 			plots, xy_max[0, *], xy_max[1, *], /data, psym=4, color=4
+			max_tb = source_section[index_max]
 
+			; Find points above 0.4 of max and mark with cross.
 			indices = where(source_section ge max(source_section)*0.4)
-			if indices[0] le 0 then indices=0
+			if n_elements(indices) eq 1 then indices=0
 			xy_indices = array_indices(source_section, indices)
 
 			set_line_color
 			plots, xy_indices[0, *], xy_indices[1, *], /data, psym=1, color=5
 
 			total_Tb = TOTAL(source_section[indices])		;summing over specified source area
-			freq = nrh_hdr.freq * 1e6			;calculate flux
+			freq = nrh_hdr.freq * 1e6						;calculate flux
 			lambda = c / freq
 			constant = (2.* k_B * domega) / (lambda^2.)
 			flux = constant * total_Tb	; in SFU
 
-			print, 'Source Flux: '+string(flux)+' (sfu)'
+			print, 'Source Flux at '+anytim(nrh_times, /yoh)+' : '+string(flux)+' (sfu)'
+			if i eq 0 then source_Tb = max_tb else source_Tb = [source_Tb, max_tb]
 			if i eq 0 then source_flux = flux else source_flux = [source_flux, flux]
 			if i eq 0 then times = nrh_times else times = [times, nrh_times]
 
 			tstart = tstart + 1.0
 			i=i+1
 		endwhile				
-
+STOP
 		freq_str = string(nrh_hdr.freq, format='(I03)')
-		sfu_time = {name:'sfu_time_'+freq_str, time:times, flux:source_flux, freq:nrh_hdr.freq}
-		if k eq 0 then sfu_time_struct = sfu_time  else sfu_time_struct = [sfu_time_struct, sfu_time]
-
+		sfu_time = {name:'sfu_time_'+freq_str, time:times, flux:source_flux, Tb:source_Tb, freq:nrh_hdr.freq}
+		;if k eq 0 then sfu_time_struct = sfu_time  else sfu_time_struct = [sfu_time_struct, sfu_time]
+		sfu_time_struct = sfu_time
 		save, sfu_time_struct, filename='~/Data/2014_apr_18/radio/nrh/nrh_flux_'+freq_str+'_20140418_src2.sav', $
-				description='Source at active region center. Also source inside loop at later stages.'
+				description='Small moving source to the west of flux rope.'
 	
-		print, 'NEXT!!!!!!'			
-	endfor		
+		STOP	
+		undefine, source_Tb
+		undefine, source_flux
+		undefine, times
+
+		print, 'NEXT!!!!!!'		
+			
+	endfor	
+
 	stop		
 			
 END

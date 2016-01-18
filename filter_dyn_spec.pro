@@ -42,7 +42,7 @@ pro filter_dyn_spec
 	freq0 = 140
 	freq1 = 1000
 	time0 = '20140418_124800'
-	time1 = '20140418_125600'
+	time1 = '20140418_125800'
 
 	date_string = time2file(file2time(time0), /date)
 
@@ -61,24 +61,44 @@ pro filter_dyn_spec
 	orf_spec = orf_spec[index0:index1, *]
 	orf_time = orf_time[index0:index1]
 
-	fc1 = 0.0
-    fc2 = 0.05
-    n = 53
+	;flow = 0.3
+    ;fhigh = 0.8
+    ;nterms = 50
+    smoothing = 10
 
-    for i=0, n_elements(orf_time)-1 do begin
-    	signal = transpose(orf_spec[i, *])
-    	Result = LANCZOS_BANDPASS(signal, fc1, fc2, n, /Detrend)
-    	orf_spec[i, *] = Result
-    	progress_percent, i, 0, n_elements(orf_time)-1 
+    ;for i=0, n_elements(orf_time)-1 do begin
+    ;	signal = transpose(orf_spec[i, *])
+    ;	hfreq = signal - smooth(signal, smoothing)
+    ;	signal = signal + 2.5*hfreq
+
+    ;   Get coefficients:
+	;	Coeff = DIGITAL_FILTER(flow, fhigh, 50.0, nterms)
+	; 	Apply the filter:
+	;	Result = CONVOL(signal, Coeff)
+
+    ;   Result = LANCZOS_BANDPASS(signal, fc1, fc2, n, /Detrend)
+
+    ;	orf_spec[i, *] = signal
+    ;	progress_percent, i, 0, n_elements(orf_time)-1 
+   ; endfor
+
+    for i=0, n_elements(orf_freqs)-1 do begin
+    	signal = transpose(orf_spec[*, i])
+    	hfreq = signal - smooth(signal, smoothing)
+    	signal = signal + 2.5*hfreq
+
+    	orf_spec[*, i] = signal
+    	progress_percent, i, 0, n_elements(orf_freqs)-1 
     endfor
     	
-
+    ;hfreq_img = orf_spec - smooth(orf_spec, 20)
+    ;orf_spec = orf_spec + 1.5*hfreq_img
 
     loadct, 74, /silent
 	reverse_ct
 	scl_lwr = -0.4				;Lower intensity scale for the plots.
 	
-	plot_spec, orf_spec, orf_time, reverse(orf_freqs), [freq0, freq1], [time0, time1], scl0=-0.1, scl1=1.2
+	plot_spec, (orf_spec), orf_time, reverse(orf_freqs), [freq0, freq1], [time0, time1], scl0=-1.1, scl1=4.2
 
 
 

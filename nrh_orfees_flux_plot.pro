@@ -124,14 +124,16 @@ pro nrh_orfees_flux_plot, postscript=postscript
 		!p.background=255
 		!p.color=0
 		!p.multi=[0,1,1]
-		!p.charsize=1.5
-		window, 0, xs=1000, ys=1300
+		!p.charsize=1.0
+		window, 12, xs=500, ys=500
 	endelse
 
 	set_line_color
 
-	time0 = '20140418_124500'
-	time1 = '20140418_130500'
+	time0 = '20140418_124800'
+	time1 = '20140418_125500'
+	date_string = time2file(file2time(time0), /date)
+	orfees_folder = '~/Data/2014_apr_18/radio/orfees/'
 
 	t0plot = anytim(file2time(time0), /utim)
 	t1plot = anytim(file2time(time1), /utim)
@@ -139,82 +141,42 @@ pro nrh_orfees_flux_plot, postscript=postscript
 	;-----------------------;
 	;	    Plot GOES
 	;
-	goes = get_goes('~/Data/2014_apr_18/goes/20140418_Gp_xr_1m.txt')
-	plot_goes, goes, t0plot, t1plot
+	;goes = get_goes('~/Data/2014_apr_18/goes/20140418_Gp_xr_1m.txt')
+	;plot_goes, goes, t0plot, t1plot
 
 
 	;-----------------------;
 	;	   Plot FERMI
 	;
-	plot_fermi, t0plot, t1plot
+	;plot_fermi, t0plot, t1plot
 
 
-	;-----------------------;
-	;	   Read Orfees
-	;
-	cd,'~/Data/2014_apr_18/radio/orfees/'
-	null = mrdfits('orf20140418_101743.fts', 0, hdr0)
-	fbands = mrdfits('orf20140418_101743.fts', 1, hdr1)
-	freqs = [ fbands.FREQ_B1, $
-			  fbands.FREQ_B2, $
-			  fbands.FREQ_B3, $
-			  fbands.FREQ_B4, $
-			  fbands.FREQ_B5  ]
+	restore, orfees_folder+'orf_'+date_string+'_bsubbed_minimum.sav', /verb
+	orf_spec = orfees_struct.spec
+	orf_time = orfees_struct.time
+	orf_freqs = orfees_struct.freq
 
-	nfreqs = n_elements(freqs)		
-	freqs = reverse(freqs)	
-	
-	null = mrdfits('orf20140418_101743.fts', 2, hdr_bg, row=0)
-	tstart = anytim(file2time('20140418_101743'), /utim)
-	
-	;--------------------------------------------------;
-	;				 Choose time range
-	t0 = anytim(file2time(time0), /utim)
-	t1 = anytim(file2time(time1), /utim)
-	inc0 = (t0 - tstart)*10.0 ;Sampling time is 0.1 seconds
-	inc1 = (t1 - tstart)*10.0 ;Sampling time is 0.1 seconds
-	range = [inc0, inc1]
-	data = mrdfits('orf20140418_101743.fts', 2, hdr2, range = range)
-	
-	
-	tstart = anytim(file2time('20140418_000000'), /utim)
-	time_b1 = tstart + data.TIME_B1/1000.0
-	time_b2 = tstart + data.TIME_B2/1000.0 
-	time_b3 = tstart + data.TIME_B3/1000.0 
-	time_b4 = tstart + data.TIME_B4/1000.0 
-	time_b5 = tstart + data.TIME_B5/1000.0 
+ 	;hfreq_img = orf_spec - smooth(orf_spec, 20)
+    ;orf_spec = orf_spec + 3.5*hfreq_img
 
-	;***********************************;
-	;			Orfees Flux		
-	;***********************************;	
-
-	data = transpose([data.stokesi_b1, data.stokesi_b2, data.stokesi_b3, data.stokesi_b4, data.stokesi_b5])
-	data = reverse(data, 2)
-
-
-	;spectro_plot, sigrange(data), time_b1, freqs, $
-	;		/xs, $
-	;		/ys
-
-	nrh_freqs = [228.0, 270.0] ;	[150.0, 173.0, 228.0, 270.0, 293.0, 327.0, 408.0, 432.0, 405.0]
-	orfees_fluxes = dblarr(n_elements(time_b1), n_elements(nrh_freqs))
+	nrh_freqs = [327.0] ;	[150.0, 173.0, 228.0, 270.0, 293.0, 327.0, 408.0, 432.0, 405.0]
+	orfees_fluxes = dblarr(n_elements(orf_time), n_elements(nrh_freqs))
 	indices = nrh_freqs
 	for i=0, n_elements(nrh_freqs)-1 do begin
-		index = closest(freqs, nrh_freqs[i])
-		orfees_fluxes[*, i] = data[*, index]
+		index = closest(orf_freqs, nrh_freqs[i])
+		orfees_fluxes[*, i] = orf_spec[*, index]
 	endfor	
 
-	times = time_b1
-	for i=0, n_elements(nrh_freqs)-1,1 do begin
+	for i=0, n_elements(nrh_freqs)-1 do begin
 
 		fluxes = orfees_fluxes[*, i]
 
 		if i eq 0 then begin
-			utplot, times, smooth(fluxes, 1), $
+			utplot, orf_time, smooth(fluxes, 10), $
 					/xs, $
 					/ys, $
 					xr = [t0plot, t1plot], $
-					yr=[100, 1e4], $
+					yr=[0.2, 1.2], $
 					/ylog, $
 					color=0, $
 					pos = [0.14, 0.30, 0.95, 0.54], $
@@ -225,27 +187,58 @@ pro nrh_orfees_flux_plot, postscript=postscript
 					xtitle=' '
 			xyouts, 0.82, 0.52, 'Orfees '+string(nrh_freqs[i], format='(I03)')+' MHz', color=0, /normal, charsize=1.0
 		endif else begin
-			outplot, times, smooth(fluxes, 1), $
+			outplot, orf_time, smooth(fluxes, 1), $
 					color=i+1
 			xyouts, 0.82, 0.52-i/120.0, 'Orfees '+string(nrh_freqs[i], format='(I03)')+' MHz', color=i+1, /normal, charsize=1.0
 		endelse		
+
 	endfor
 
 
 	;***********************************;
-	;			NRH Flux		
+	;			  NRH Flux		
 	;***********************************;	
 
 
-	restore,'~/Data/2014_apr_18/radio/nrh/nrh_flux_20140418.sav', /verb
+	restore,'~/Data/2014_apr_18/radio/nrh/nrh_flux_327_20140418_src1.sav', /verb
+	time = anytim(SFU_TIME_STRUCT.time, /utim)
+	flux1 = SFU_TIME_STRUCT.flux
+	utplot, time, smooth(flux1, 2), $
+					/xs, $
+					/ys, $
+					xr = [t0plot, t1plot], $
+					color=0, $
+					/ylog, $
+					ytitle='Flux Density (SFU)', $
+					yr=[0.1, 1000], $
+					pos = [0.14, 0.07, 0.95, 0.30], $
+					/noerase
 
-	for i=0,2 do begin; (size(flux_struct))[2],2 do begin
+
+	restore,'~/Data/2014_apr_18/radio/nrh/nrh_flux_327_20140418_src2.sav', /verb
+	time = anytim(SFU_TIME_STRUCT.time, /utim)
+	flux2 = SFU_TIME_STRUCT.flux + flux1
+	utplot, time, smooth(flux2, 2), $
+					/xs, $
+					/ys, $
+					xr = [t0plot, t1plot], $
+					color=0, $
+					/ylog, $
+					ytitle='Flux Density (SFU)', $
+					yr=[0.1, 1000], $
+					pos = [0.14, 0.07, 0.95, 0.30], $
+					/noerase				
+
+
+
+STOP
+	for i=5, 5 do begin		; (size(flux_struct))[2],2 do begin
 
 		success = execute('data = flux_struct.'+ (tag_names(flux_struct))[i])
 		times = anytim(data[*, 0], /utim)
 		fluxes = data[*, 1]
 
-		if i eq 0 then begin
+		if i eq 5 then begin
 			utplot, times, smooth(fluxes, 2), $
 					/xs, $
 					/ys, $

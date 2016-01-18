@@ -25,6 +25,7 @@ pro nrh_careful_look
 					  nrh_data, $
 					  hbeg=t0str;, $ 
 					  ;hend=t1str
+					  stop
 					
 			index2map, nrh_hdr, nrh_data, $
 					   nrh_map  

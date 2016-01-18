@@ -113,7 +113,7 @@ pro nrh_aia_mosaic, times, freqs, positions=positions, color=color
 	; color: color of NRH contours.
 
 	aia_folder = '~/Data/2014_Apr_18/sdo/171A/'
-	nrh_folder = '~/Data/2014_Apr_18/radio/nrh/clean_wresid/'
+	nrh_folder = '~/Data/2014_Apr_18/radio/nrh/';clean_wresid/'
 	read_nrh = 'read_nrh, nrh_filenames[nrh_index], nrh_hdr, nrh_data, hbeg=t0'
 
 	; First filter AIA for correct exposure times.
