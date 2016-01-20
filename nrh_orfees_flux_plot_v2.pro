@@ -2,14 +2,14 @@ pro setup_ps, name
   
    set_plot,'ps'
    !p.font=0
-   !p.charsize=1.2
+   !p.charsize=1.0
    !p.thick=4
    device, filename = name, $
           /color, $
           /helvetica, $
           /inches, $
-          xsize=6, $
-          ysize=6, $
+          xsize=8, $
+          ysize=3, $
           bits_per_pixel=16, $
           /encapsulate, $
           yoffset=5
@@ -24,12 +24,12 @@ pro nrh_orfees_flux_plot_v2, frequency, postscript=postscript
 		setup_ps, '~/nrh_orfees_flux_'+string(frequency, format='(I03)')+'.eps'
 	endif else begin
 		loadct, 0
-		;!p.background=255
-		;!p.color=0
+		!p.background=255
+		!p.color=0
 		!p.thick=1
-		;!p.multi=[0,1,1]
-		;!p.charsize=1.0
-		;window, 12, xs=700, ys=400
+		!p.multi=[0,1,1]
+		!p.charsize=1.0
+		window, 12, xs=700, ys=400
 	endelse
 
 		time0 = '20140418_124800'
@@ -41,35 +41,43 @@ pro nrh_orfees_flux_plot_v2, frequency, postscript=postscript
 		t0plot = anytim(file2time(time0), /utim)
 		t1plot = anytim(file2time(time1), /utim)
 
+
+		;***********************************;
+		;			 Orfees Flux		
+		;***********************************;	
+
 		restore, orfees_folder+'orf_'+date_string+'_bsubbed_minimum.sav', /verb
 		orf_spec = orfees_struct.spec
 		orf_time = orfees_struct.time
 		orf_freqs = reverse(orfees_struct.freq)
-
-	 	;hfreq_img = orf_spec - smooth(orf_spec, 20)
-	    ;orf_spec = orf_spec + 3.5*hfreq_img
+		t_index = where(orf_time gt t0plot and orf_time lt t1plot)
+		orf_time = orf_time[t_index]
+	 
 
 		index = closest(orf_freqs, frequency)
 		orf_frequency_str = string(round(orf_freqs[index]), format='(I03)')
-		orfees_flux = orf_spec[*, index]
+		orfees_flux = smooth(orf_spec[t_index, index],3)
+		;orfees_flux = orfees_flux/max(orfees_flux)
 
 
 		set_line_color
-		utplot, orf_time, smooth(orfees_flux/max(orfees_flux), 5), $
+		utplot, orf_time, orfees_flux/max(orfees_flux), $
 				/xs, $
 				/ys, $
 				xr = [t0plot, t1plot], $
-				yr=[0.0, 1.0], $
+				linestyle=0, $
+				;yr=[0.0, 1.0], $
 				;/ylog, $
-				color=0, $
-				pos = [0.15, 0.12, 0.95, 0.45], $
-				/noerase, $
+				color=0;, $;, $
+				;pos = [0.15, 0.12, 0.95, 0.45], $
+				;/noerase, $
 				;title='Orfees', $
-				xgridstyle = 1.0, $
-				ygridstyle = 1.0, $
-				ytitle='Normalised flux';, $
-				;XTICKFORMAT="(A1)", $
+		;		xgridstyle = 1.0, $
+		;		ygridstyle = 1.0, $
+		;		ytitle='Normalised flux';, $
+		;		XTICKFORMAT="(A1)";, $
 				;xtitle=' '
+		
 
 		;***********************************;
 		;			  NRH Flux		
@@ -80,24 +88,38 @@ pro nrh_orfees_flux_plot_v2, frequency, postscript=postscript
 		restore, nrh_folder + nrh_flux_file, /verb
 		time = anytim(SFU_TIME_STRUCT.time, /utim)
 		flux = alog10(SFU_TIME_STRUCT.flux)
+		flux1 = flux/max(flux)
 		
-		outplot, time, smooth(flux/max(flux), 2), $
-						color=3
+		outplot, time, flux1, $
+				color=3
 
+		lag = [0]
+		result = C_CORRELATE(congrid(orfees_flux, 540), congrid(flux1, 540), lag, /cov)		
+		print, '---------------------'	
+		print, 'C correlation flux 1: '+string( max(result)	)
+		print, '---------------------'	
 
 		nrh_flux_file = 'nrh_flux_'+string(frequency, format='(I03)')+'_20140418_src2.sav'
 		print, 'Reading '+nrh_flux_file 
 		restore, nrh_folder + nrh_flux_file, /verb
 		time = anytim(SFU_TIME_STRUCT.time, /utim)
 		flux = alog10(SFU_TIME_STRUCT.flux>0)			
+		flux2 = flux/max(flux)
+		remove_nans, flux2, flux2
 
+		outplot, time, flux2, $
+				color=5, $
+				linestyle=3		
 
-		outplot, time, flux/max(flux), $
-						color=5					
+		result = C_CORRELATE(congrid(orfees_flux, 540), congrid(flux2, 540), lag, /cov)			
+		print, '---------------------'	
+		print, 'C correlation flux 2: '+string( max(result)	)		
+		print, '---------------------'						
 						
 		freq_str = string(SFU_TIME_STRUCT.freq, format='(I03)')
-		xyouts, 0.16, 0.42, 'Orfees '+orf_frequency_str+' MHz', color=0, /normal, charsize=0.8
-		xyouts, 0.16, 0.40, 'NRH '+freq_str+' MHz', color=3, /normal, charsize=0.8
+		;xyouts, 0.12, 0.92, 'NRH '+freq_str+' MHz', color=0, /normal, charsize=0.8
+		;xyouts, 0.12, 0.90, 'Orf AR src '+orf_frequency_str+' MHz', color=3, /normal, charsize=0.8
+		;xyouts, 0.12, 0.88, 'Orf moving source' +orf_frequency_str+' MHz', color=5, /normal, charsize=0.8
 					
 
 	if keyword_set(postscript) then begin

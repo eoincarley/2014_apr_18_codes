@@ -15,35 +15,41 @@ pro setup_ps, name
 end
 
 
-pro plot_nrh_aia_orfees_mosaic, all_freqs=all_freqs
-
-	xsize = 2000
-	ysize = xsize
-	loadct, 0
-	reverse_ct
-	!p.charsize=1.5
-	!p.thick=1
-	!x.thick=1
-
+pro plot_nrh_aia_orfees_mosaic, all_freqs=all_freqs, postscript=postscript
 
 	; Firstly, select the the time and frequency points from Orfées.
-	dam_orfees_oplot, time_points = times, freq_points = freqs, /choose
-
+	
+	;dam_orfees_oplot, time_points = times, freq_points = freqs, /choose
+	times = anytim( '2014-04-18T' + ['12:49:55', '12:50:41', '12:51:45', '12:53:03'], /utim )
+	;------------------------------------;
+	;			Window params
 	;
-	; Construct the positions matrix
-	; 
-	nrh_freqs = [270.0, 298.0, 327.0, 408.0, 432.0];, 445.0];[150.0, 173.0, 228.0, 270.0, 298.0, 327.0, 408.0, 432.0, 445.0]
+	xsize = 1500
+	ysize = xsize
+	if keyword_set(postscript) then begin 
+		setup_ps, '~/aia_nrh_mosaic_20140418.eps'
+	endif else begin
+		loadct, 0
+		reverse_ct
+		!p.charsize=1.5
+		!p.thick=1
+		!x.thick=1
+	endelse	
+	
+	nrh_freqs = [228.0, 298.0, 327.0, 432.0] 	;[150.0, 173.0, 228.0, 270.0, 298.0, 327.0, 408.0, 432.0, 445.0]
 
 	nimages = n_elements(times) + 1
 	xpos = findgen(nimages)*(0.95 - 0.05)/(nimages-1) + 0.05
 	nfreqs = n_elements(nrh_freqs) + 1
 	ypos = findgen(nfreqs)*(0.95 - 0.05)/(nfreqs -1) + 0.05
 	
-
+	
 	if keyword_set(all_freqs) then begin
 
 		;
-		; N_times X N freqs
+		; N_times X N_freqs
+		;
+		; Construct the positions matrix in 'mosaic'
 		; 
 		freqs = nrh_freqs
 		for j=0, n_elements(nrh_freqs)-1 do begin
@@ -56,18 +62,18 @@ pro plot_nrh_aia_orfees_mosaic, all_freqs=all_freqs
 		yaspect=float(n_elements(times))/float(n_elements(nrh_freqs))
 
 		;
-		; Window parameters. Aspect tatio adjusted depending on num of times and freqs
+		; Window parameters. Aspect ratio adjusted depending on num of times and freqs
 		; 
 
 		if yaspect lt 1 then xsize = xsize*yaspect else ysize = ysize/yaspect
-		window, 20, xs=xsize, ys=ysize, retain=2
+		if ~keyword_set(postscript) then window, 20, xs=xsize, ys=ysize, retain=2
 
 		;
 		; Plot image at each position
 		; 
-		colors = indgen(n_elements(freqs)) + 2
+		colors = [2,3,4,10]	;indgen(n_elements(freqs)) + 2
 		img_num = 0
-		for i=0, n_elements(freqs)-1 do begin
+		for i=n_elements(freqs)-1, 0, -1 do begin	; Backwards loop to plot highest frequency at the bottom
 			for j=0, n_elements(times)-1 do begin
 				nrh_aia_mosaic, times[j], freqs[i], positions=mosaic[*, *, img_num], $
 							color = colors[i]
@@ -79,7 +85,7 @@ pro plot_nrh_aia_orfees_mosaic, all_freqs=all_freqs
 	endif else begin
 
 		;
-		; this part for when just specific time and frequcney points are needed.
+		; this part for when specific time and frequcney points are chosen.
 		; 
 		for i=0, n_elements(times)-1 do begin
 			pos = [xpos[i], 0.05, xpos[i+1], 0.95]
@@ -89,12 +95,16 @@ pro plot_nrh_aia_orfees_mosaic, all_freqs=all_freqs
 
 	
 		if yaspect lt 1 then xsize = xsize*yaspect else ysize = ysize/yaspect
-		window, 20, xs=xsize, ys=ysize, retain=2
+		if ~keyword_set(postscript) then window, 20, xs=xsize, ys=ysize, retain=2
 
 		for i=0, n_elements(times)-1 do $	
 			nrh_aia_mosaic, times[i], freqs[i], positions=mosaic[*, *, i]
-
 	endelse	
+
+	if keyword_set(postscript) then begin
+		device, /close
+		set_plot, 'ps'
+	endif	
 
 END
 
@@ -106,14 +116,20 @@ pro nrh_aia_mosaic, times, freqs, positions=positions, color=color
 
 	; times: time of the image. The closest NRH file is chosen. Then the closest AIA file.
 
-	; freqs: Frequency at which to over plot NRH contours.
+	; freqs: Frequency at which to overplot NRH contours.
 
 	; position: Position of the image in normal coordinates.
 
 	; color: color of NRH contours.
 
+	border_size = 0.005
+	positions[0] = positions[0] + border_size
+	positions[1] = positions[1] + border_size
+	positions[2] = positions[2] - border_size
+	positions[3] = positions[3] - border_size
+
 	aia_folder = '~/Data/2014_Apr_18/sdo/171A/'
-	nrh_folder = '~/Data/2014_Apr_18/radio/nrh/';clean_wresid/'
+	nrh_folder = '~/Data/2014_Apr_18/radio/nrh/clean_wresid/'
 	read_nrh = 'read_nrh, nrh_filenames[nrh_index], nrh_hdr, nrh_data, hbeg=t0'
 
 	; First filter AIA for correct exposure times.
@@ -160,24 +176,35 @@ pro nrh_aia_mosaic, times, freqs, positions=positions, color=color
 		outsize = 2048		
   
 	;
-	;			     Plot diff image
+	;		 Plot diff image
 	;
 	FOV = [16.0, 16.0]
 	CENTER = [600.0, -300.0]
 	loadct, 0, /silent
+
+	; Sort out label and tick formats based on image position
+	pos = positions
+	if pos[3] eq 0.945 then title = anytim(nrh_hdr.date_obs, /cc, /trun) else title = ' '
+	if pos[0] eq 0.055 and pos[1] eq 0.055 then labelfmt = ['(I4)', '(I4)', 'X (arcsecs)', 'Y (arcsecs)' ]	; x and y ticks
+	if pos[0] gt 0.055 and pos[1] eq 0.055 then labelfmt = ['(I4)', '(A1)', 'X (arcsecs)', ' ' ]	; x ticks
+	if pos[0] eq 0.055 and pos[1] gt 0.055 then labelfmt = ['(A1)', '(I4)', ' ', 'Y (arcsecs)' ]	; y ticks
+	if pos[0] gt 0.055 and pos[1] gt 0.055 then labelfmt = ['(A1)', '(A1)', ' ', ' ']	; no ticks
+
 	plot_map, diff_map(map_aia, map_aia_pre), $
-		dmin = -25.0, $
-		dmax = 25.0, $
+		dmin = -20.0, $
+		dmax = 20.0, $
 		fov = FOV, $
 		center = CENTER, $
 		position = positions, $
 		/noerase, $
 		/normal, $
-		title=nrh_hdr.date_obs, $
+		title=title, $
+		xtitle = labelfmt[2], $
+		ytitle = labelfmt[3], $
 		charsize=1.0, $
-		/square, $
-		color=0
-
+		color=0, $
+		XTickformat=labelfmt[0], $
+		YTickformat=labelfmt[1]
 
 	plot_helio, he_aia.date_obs, $
 		/over, $
@@ -199,9 +226,11 @@ pro nrh_aia_mosaic, times, freqs, positions=positions, color=color
 
 	;		Define contour levels
 	max_val = max( (nrh_data) ,/nan) 									   
-	nlevels=6.0   
-	top_percent = 0.8
-	levels = (dindgen(nlevels)*(9. - 8.0)/(nlevels-1.0)) + 8.0
+	nlevels=7.0   
+	;top_percent = 0.8
+	top_contour = 9.0 		; Kelvin
+	bottom_contour = 7.9	; Kelvin
+	levels = (dindgen(nlevels)*(top_contour - bottom_contour)/(nlevels-1.0)) + bottom_contour
 
 	set_line_color
 	plot_map, nrh_map, $
@@ -212,7 +241,7 @@ pro nrh_aia_mosaic, times, freqs, positions=positions, color=color
 		/noxticks, $
 		/noyticks, $
 		/noaxes, $
-		thick=2, $
+		thick=3, $
 		color=color
 
 	set_line_color
@@ -223,11 +252,12 @@ pro nrh_aia_mosaic, times, freqs, positions=positions, color=color
 		/noxticks, $
 		/noyticks, $
 		/noaxes, $
-		thick=1
+		thick=1.5, $
+		color=1
 
 	set_line_color
-	xyouts, positions[0]+0.01, positions[1]+0.01, 'NRH ' + string(nrh_hdr.freq, format='(I3)') + ' MHz', /normal, charsize=1.0
-	xyouts, positions[0]+0.01, positions[3]+0.01,  anytim(nrh_hdr.date_obs, /cc, /trun, /time_only) +' UT', /normal, charsize=1.0
+	xyouts, positions[0]+0.01, positions[1]+0.01, 'NRH ' + string(nrh_hdr.freq, format='(I3)') + ' MHz', /normal, charsize=1.0, color=color
+	;xyouts, positions[0]+0.01, positions[3]+0.01,  anytim(nrh_hdr.date_obs, /cc, /trun, /time_only) +' UT', /normal, charsize=1.0
 
 
 	print, he_aia.date_obs

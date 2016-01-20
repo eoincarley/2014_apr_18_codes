@@ -15,7 +15,7 @@ pro setup_ps, name
 
 end
 
-pro dam_orfees_plot_gen, save_orfees = save_orfees, postscript=postscript
+pro dam_orfees_plot, save_orfees = save_orfees, postscript=postscript
 
 
 	; This v2 now puts the seperate dynamic spectra into one.
