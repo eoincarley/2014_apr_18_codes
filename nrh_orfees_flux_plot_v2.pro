@@ -83,6 +83,8 @@ pro nrh_orfees_flux_plot_v2, frequency, postscript=postscript
 		;			  NRH Flux		
 		;***********************************;	
 
+
+
 		nrh_flux_file = 'nrh_flux_'+string(frequency, format='(I03)')+'_20140418_src1.sav'
 		print, 'Reading '+nrh_flux_file 
 		restore, nrh_folder + nrh_flux_file, /verb
@@ -90,8 +92,20 @@ pro nrh_orfees_flux_plot_v2, frequency, postscript=postscript
 		flux = alog10(SFU_TIME_STRUCT.flux)
 		flux1 = flux/max(flux)
 		
-		outplot, time, flux1, $
+		index_src1 = where(time le anytim('2014-04-18T12:53:30', /utim))
+		outplot, time[index_src1], flux1[index_src1], $
 				color=3
+
+		if frequency eq 432. then begin
+			; After this time the source changes position, not active region source anymore
+			index_src3 = where(time ge anytim('2014-04-18T12:53:30', /utim))
+			outplot, time[index_src3], flux1[index_src3], $
+				color=3, $
+				thick=4, $
+				linestyle=2
+
+		endif		
+		
 
 		lag = [0]
 		result = C_CORRELATE(congrid(orfees_flux, 540), congrid(flux1, 540), lag, /cov)		

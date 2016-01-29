@@ -2,11 +2,11 @@ pro nrh_choose_centroid_calc_flux
 
 	;Code to choose where the source is then calulcate flux for that source only.
 
-	cd, '~/Data/2014_apr_18/radio/nrh'
+	cd, '~/Data/2014_apr_18/radio/nrh/clean_wresid/'
 	filenames = findfile('*.fts')
 
 	window, 0, xs=400, ys=400, retain=2
-	window, 1, xs=400, ys=400, retain=2
+	window, 1, xs=700, ys=700, retain=2
 	window, 2, xs=400, ys=400, retain=2
 	!p.charsize=1.5
 	
@@ -19,12 +19,12 @@ pro nrh_choose_centroid_calc_flux
 	c = 299792458. 			;speed of light in m/s
 	k_B = 0.138				;Boltzmann constant k=1.38e-23, for SFU: K*e+22
 
-	nrh_index = [3];,3,2]			;[4,3,2,1,0]
+	nrh_index = [7];,3,2]			;[4,3,2,1,0]
 
 	for k=0, n_elements(nrh_index)-1 do begin
 
 		tstart = anytim(file2time('20140418_124700'), /utim)
-		tstop = anytim(file2time('20140418_125600'), /utim) 
+		tstop = anytim(file2time('20140418_125800'), /utim) 
 		nseconds = tstop - tstart
 		i=0
 
@@ -143,13 +143,13 @@ pro nrh_choose_centroid_calc_flux
 			tstart = tstart + 1.0
 			i=i+1
 		endwhile				
-STOP
+
 		freq_str = string(nrh_hdr.freq, format='(I03)')
 		sfu_time = {name:'sfu_time_'+freq_str, time:times, flux:source_flux, Tb:source_Tb, freq:nrh_hdr.freq}
 		;if k eq 0 then sfu_time_struct = sfu_time  else sfu_time_struct = [sfu_time_struct, sfu_time]
 		sfu_time_struct = sfu_time
-		save, sfu_time_struct, filename='~/Data/2014_apr_18/radio/nrh/nrh_flux_'+freq_str+'_20140418_src2.sav', $
-				description='Small moving source to the west of flux rope.'
+		save, sfu_time_struct, filename='~/Data/2014_apr_18/radio/nrh/nrh_flux_'+freq_str+'_20140418_src1.sav', $
+				description='Active region source.'
 	
 		STOP	
 		undefine, source_Tb

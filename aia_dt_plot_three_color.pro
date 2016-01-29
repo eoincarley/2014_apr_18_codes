@@ -2,10 +2,10 @@ pro stamp_date, wave1, wave2, wave3
    set_line_color
 
    xpos_aia_lab = 0.18
-   ypos_aia_lab = 0.8
+   ypos_aia_lab = 0.82
 
-   xyouts, xpos_aia_lab, ypos_aia_lab+0.08, wave1, alignment=0, /normal, color = 0, charthick=5, charsize=1.3
-   xyouts, xpos_aia_lab, ypos_aia_lab+0.08, wave1, alignment=0, /normal, color = 3, charthick=0.5, charsize=1.3
+   xyouts, xpos_aia_lab, ypos_aia_lab+0.07, wave1, alignment=0, /normal, color = 0, charthick=5, charsize=1.3
+   xyouts, xpos_aia_lab, ypos_aia_lab+0.07, wave1, alignment=0, /normal, color = 3, charthick=0.5, charsize=1.3
    
    xyouts, xpos_aia_lab, ypos_aia_lab+0.035, wave2, alignment=0, /normal, color = 0, charthick=5, charsize=1.3
    xyouts, xpos_aia_lab, ypos_aia_lab+0.035, wave2, alignment=0, /normal, color = 4, charthick=2, charsize=1.3
@@ -17,7 +17,7 @@ END
 
 pro aia_dt_plot_three_color, ps=ps, choose_points=choose_points
 
-	;Code to plot the distance time maps of from AIA
+	;Code to plot the distance time maps from AIA
 
 	!p.font = 0
 	!p.charsize = 1.0
@@ -27,7 +27,7 @@ pro aia_dt_plot_three_color, ps=ps, choose_points=choose_points
 	
 	if keyword_set(ps) then begin
 		set_plot, 'ps'
-		device, filename='~/aia_dt_maps_hot.eps', $
+		device, filename='~/aia_dt_maps_hot_20.eps', $
 				/encapsulate, $
 				/color, $ 
 				/inches, $
@@ -39,13 +39,12 @@ pro aia_dt_plot_three_color, ps=ps, choose_points=choose_points
 		window, 0, xs=600, ys=600
 	endelse
 
-
 	min_scl = -1
 	max_scl = 0.05
 	;-------------------------------------------;
 	;				Plot 171
 	;
-	angle = '035'
+	angle = '020'
 	waves = ['094', '131', '335']
 	cd, '~/Data/2014_Apr_18/sdo/dist_time/'
 	restore, 'aia_'+waves[0]+'_dt_map_'+angle+'.sav', /verbose
@@ -148,11 +147,13 @@ pro aia_dt_plot_three_color, ps=ps, choose_points=choose_points
 	plota = fltarr(sizex-5, sizey)
 	plotb = fltarr(sizex-5, sizey)
 	plotc = fltarr(sizex-5, sizey)
+	min_tim = min_tim[5:n_elements(min_tim)-1]
+
 	
 	for i=5, sizex-1 do begin
-		plota[i-5, *] = distt_a[i, *]/distt_a[i-5, *] >0.8 <1.15 
-		plotb[i-5, *] = distt_b[i, *]/distt_b[i-5, *] >0.8 <1.15
-		plotc[i-5, *] = distt_c[i, *]/distt_c[i-5, *] >0.8 <1.15
+		plota[i-5, *] = distt_a[i, *]/distt_a[i-5, *] >0.7 <1.15 
+		plotb[i-5, *] = distt_b[i, *]/distt_b[i-5, *] >0.7 <1.15
+		plotc[i-5, *] = distt_c[i, *]/distt_c[i-5, *] >0.7 <1.15
 	endfor
 	
 
@@ -167,9 +168,8 @@ pro aia_dt_plot_three_color, ps=ps, choose_points=choose_points
 
 	img = congrid(truecolorim, 500, 500, 3)
 
-
 	loadct, 1
-	spectro_plot, distt_a > (-25) < 25, min_tim, lindMm, $
+	spectro_plot, plota > (-25) < 25, min_tim, lindMm, $
   				/xs, $
   				/ys, $
   				ytitle = 'Distance (Mm)', $
@@ -192,12 +192,24 @@ pro aia_dt_plot_three_color, ps=ps, choose_points=choose_points
 	 	xticklen=-0.001, $
         yticklen=-0.001
 
-    stamp_date, 'AIA 94', 'AIA 131', 'AIA 335'
+    utplot, min_tim, lindMm, $
+	  	/nodata, $
+	  	/xs, $
+	  	/ys, $
+	  	xr = [tstart, tend], $
+		position = [0.15, 0.15, 0.95, 0.95], $
+		/noerase, $
+		/normal
 
+
+    stamp_date, 'AIA '+waves[0], 'AIA '+waves[1], 'AIA '+waves[2]
+    if waves[0] eq '094' then channels = 'hot' else channels='cool'
 			
 	if keyword_set(choose_points) then begin
-		point, tim, dis
-		save, tim, dis, filenam='aia_171A_dt_points.sav'
+		point, tim, dis, /data
+		print, tim
+		map_points = { name:'dt_map_points', times:tim, dis:dis, angle:angle, waves:waves }
+		save, map_points, filenam='aia_'+channels+'_dtpoints_'+angle+'.sav'
 	endif
 
 	

@@ -1,6 +1,6 @@
 pro nrh_flux_plot_v2
 
-	; Plot the AR source
+	; Plot the AR and Looptop source for NRH.
 
 	time0 = '20140418_124800'
 	time1 = '20140418_125600'

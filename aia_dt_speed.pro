@@ -43,7 +43,7 @@ pro aia_dt_speed, ps=ps
 
 	cd, '~/Data/2014_Apr_18/sdo/dist_time'
 
-	dtpoints = findfile('aia_*_dt*.sav')
+	dtpoints = findfile('aia_*_dt_points*.sav')
 	for i=0, n_elements(dtpoints)-1 do begin
 		tstart = anytim('2014-apr-18T12:35:00', /utim)
 		tend = anytim('2014-apr-18T12:55:00', /utim)
@@ -125,11 +125,17 @@ pro aia_dt_speed, ps=ps
 			thick=3
 
 
+			;[drifter 2, drifter 1, type II]
+	;radio_speeds = [350., 450., 1000.]
+	;radio_times = anytim(['2014-04-18T12:53:00.465', $
+	;					  '2014-04-18T12:50:21.221', $
+	;					  '2014-04-18T12:58:54.767'], /utim)
+	drifter_1_speed= [450.]
+	drifter_1_time = [anytim('2014-04-18T12:50:21.221', /utim)]
 
-	radio_speeds = [350., 540., 1000.]
-	radio_times = anytim(['2014-04-18T12:53:00.465', $
-						  '2014-04-18T12:50:21.221', $
-						  '2014-04-18T12:58:54.767'], /utim)
+	drifter_2_speed= [506.]
+	drifter_2_time = [anytim('2014-04-18T12:53:21.221', /utim)]
+
 
 	euv_wave_speed = [740.0];/cos(48*!dtor)
 	euv_wave_time = anytim(['2014-04-18T12:53:00.465'], /utim)
@@ -139,8 +145,15 @@ pro aia_dt_speed, ps=ps
 
 
 	PLOTSYM, 0, /fill
-	outplot, radio_times, radio_speeds, psym=8, color=0, symsize=1.2
-	outplot, radio_times, radio_speeds, psym=8, color=7, symsize=1.0
+	outplot, drifter_1_time, drifter_1_speed, psym=8, color=0, symsize=1.2
+	outplot, drifter_1_time, drifter_1_speed, psym=8, color=7, symsize=1.0
+	oploterror, drifter_1_time, drifter_1_speed, [57.], /hibar, psym=8, color=0, symsize=1.2
+	oploterror, drifter_1_time, drifter_1_speed, [93.], /lobar, psym=8, color=0, symsize=1.2
+
+	outplot, drifter_2_time, drifter_2_speed, psym=8, color=0, symsize=1.2
+	outplot, drifter_2_time, drifter_2_speed, psym=8, color=7, symsize=1.0
+	oploterror, drifter_2_time, drifter_2_speed, [594.], /hibar, psym=8, color=0, symsize=1.2
+	oploterror, drifter_2_time, drifter_2_speed, [276.], /lobar, psym=8, color=0, symsize=1.2
 
 	outplot, euv_wave_time, euv_wave_speed, psym=8, color=0, symsize=1.2
 	outplot, euv_wave_time, euv_wave_speed, psym=8, color=10, symsize=1.0
