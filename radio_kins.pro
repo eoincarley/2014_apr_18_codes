@@ -17,8 +17,10 @@ pro setup_ps, name
 end
 
 pro radio_kins
-
-	; A code to examine the influence of different models and radio drift of various features.
+	
+	;
+	; A code to examine the influence of different models and radio drift of various features using 2014-Apr-18 event.
+	;
 
 	rsun = 6.95e8	; m
 	models = ['saito', 'newkirk', 'baum', 'leblanc', 'mann'];, 'hydro_stat']
@@ -44,7 +46,7 @@ pro radio_kins
 		;---------------------------------------------------------;
 		;		Set up kinematics structure for each burst
 		;
-		burst_speed = {name:radio_kins.name}
+		burst_speeds = {name:radio_kins.name, times:radio_kins.times}
 
 		setup_ps, folder+'/radio_kins_model_test_'+radio_kins.name+'.eps'
 		;window, i, xs=400, ys=500

@@ -44,7 +44,7 @@ pro	calc_kins, tim, dis, color=color, tim_sim=tim_sim, vel_sim=vel_sim
 
 END
 
-pro aia_kins, tstart, tend
+pro aia_dt_kins, tstart, tend
 
 	; Develop further the code of aia_dt_speed
 
@@ -52,7 +52,7 @@ pro aia_kins, tstart, tend
 
 	xposl = 0.15
 	xposr = 0.9
-	deproject = 1/cos(50.0*!dtor)
+	deproject = 1./cos(45.0*!dtor)
 
 	;window, 0
 	
