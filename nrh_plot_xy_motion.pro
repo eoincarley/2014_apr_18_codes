@@ -18,7 +18,7 @@ end
 pro nrh_plot_xy_motion, postscript=postscript
 
 	loadct, 0, /silent
-	cd,'~/Data/2014_apr_18/radio/nrh/'
+	cd,'~/Data/2014_apr_18/radio/nrh/clean_wresid/'
 	if keyword_set(postscript) then begin
 		setup_ps, 'nrh_source_motion.eps'
 	endif else begin
@@ -26,7 +26,7 @@ pro nrh_plot_xy_motion, postscript=postscript
 		!p.charsize=1.5
 	endelse	
 	
-	motion_files = findfile('nrh*src*motion.sav')
+	motion_files = findfile('~/Data/2014_apr_18/radio/nrh/nrh*src*motion.sav')
 	image_file = findfile('*.fts')
 	AU = 149e6	;  km
 
@@ -97,34 +97,34 @@ pro nrh_plot_xy_motion, postscript=postscript
 
 		sym = symbol[j]
 		
-		step=1		; This step size (or 30) produces a speed that mathces what it should be e.g., 
+		step=30		; This step size (or 30) produces a speed that mathces what it should be e.g., 
 					; simply taking the first and last points as displacements and a time of 500 seconds gives ~360 km/s
 		for i=0, n_elements(xarcs)-(step+1), step do begin
 			
 				color = interpol(colors, tcolors, anytim(times[i], /utim))
 				plots, xarcs[i], yarcs[i], color=color, psym=sym, symsize=1.2
 			
-				;x1 = xarcs[i]
-				;x2 = xarcs[i+step]
-				;y1 = yarcs[i]
-				;y2 = yarcs[i+step]
-				;dt = anytim(times[i+step], /utim) - anytim(times[i], /utim)
+				x1 = xarcs[i]
+				x2 = xarcs[i+step]
+				y1 = yarcs[i]
+				y2 = yarcs[i+step]
+				dt = anytim(times[i+step], /utim) - anytim(times[i], /utim)
 
-				;displ_arcs = sqrt( (x2-x1)^2 + (y2-y1)^2 )
-				;displ_degs = displ_arcs/3600.0
-				;displ = AU*tan(displ_degs*!dtor)	;km
+				displ_arcs = sqrt( (x2-x1)^2 + (y2-y1)^2 )
+				displ_degs = displ_arcs/3600.0
+				displ = AU*tan(displ_degs*!dtor)	;km
 
-				;if j eq 0 and i eq 0 then begin
-				;	displs = displ 
-				;	times_tot = times[i] 
-				;endif else begin
+				if j eq 0 and i eq 0 then begin
+					displs = displ 
+					times_tot = times[i] 
+				endif else begin
 
-				;	if times[i] gt times_tot[n_elements(times_tot)-1] then begin
-				;		displs = [displs, displs[n_elements(displs)-1]+displ]
-				;		times_tot = [times_tot, times[i]]
-				;	endif
-				;		
-				;endelse	
+					if times[i] gt times_tot[n_elements(times_tot)-1] then begin
+						displs = [displs, displs[n_elements(displs)-1]+displ]
+						times_tot = [times_tot, times[i]]
+					endif
+						
+				endelse	
 
 			;wait, 0.1
 		endfor	 
@@ -155,7 +155,7 @@ pro nrh_plot_xy_motion, postscript=postscript
 		device, /close
 		set_plot, 'x'
 	endif	
-STOP
+;STOP
 	window, 1, xs=600, ys=600
 	utplot, times_tot, displs, $
 			ytitle='Displacement (km)', $

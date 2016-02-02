@@ -23,7 +23,7 @@ pro	calc_kins, tim, dis, color=color, tim_sim=tim_sim, vel_sim=vel_sim
 		;oploterror, tim, dis, err, color=0
 		p = mpfitexpr(fit, tim_sec, dis, err, yfit=yfit, start, parinfo=pi, bestnorm=bestnorm, dof=dof)
 
-		outplot, tim, yfit, color = color
+		;outplot, tim, yfit, color = color
 		
 		speed = p[1]*1.0e3		; km/s 
 		accel = p[0]*1.0e6		; m/s/s		
@@ -67,40 +67,50 @@ pro aia_dt_kins, tstart, tend
 		restore, cool_dt_files[i]
 		dis = map_points.dis*deproject
 		times = map_points.times
-		;dis = dis[0:n_elements(dis)-1]
-		;times = times[1:n_elements(times)-1]
+		
 		angle = map_points.angle
 
-		utplot, times, dis, $
-				title = 'Points from dt map', $
-				ytitle ='Distance (Mm)', $
-				yr = [40, 350], $
-				/xs, $
-				xrange = [tstart, tend], $
-				/ys, $
-				/noerase, $
-				color = 5, $
-				psym=1, $
-				position = [xposl, 0.55, xposr, 0.95]	
+		;utplot, times, dis, $
+		;		title = 'Points from dt map', $
+		;		ytitle ='Distance (Mm)', $
+		;		yr = [40, 350], $
+		;		/xs, $
+		;		xrange = [tstart, tend], $
+		;		/ys, $
+		;		/noerase, $
+		;		color = 5, $
+		;		psym=1, $
+		;		position = [xposl, 0.55, xposr, 0.95], $
+		;		xtickformat='(A1)'
 
-		xyouts, times[n_elements(times)-1], dis[n_elements(dis)-1]+5., string(angle, format='(I03)'), $
-				/data, color=5
+		;xyouts, times[n_elements(times)-1], dis[n_elements(dis)-1]+5., string(angle, format='(I03)'), $
+		;		/data, color=5
 
 		calc_kins, times, dis, color=5, tim_sim=tim_sim, vel_sim=vel_sim
 
-		utplot, tim_sim, vel_sim, $
-			ytitle = 'Velocity (km/s)', $
-			/noerase, $
-			yr = [1, 3000], $
-			/ys, $
-			/xs, $
-			xrange = [tstart, tend], $
-			position = [xposl, 0.05, xposr, 0.5], $
-			thick=1, $
-			symsize=1.5, $
-			/ylog, $
-			color = 5
+		if vel_sim[0] lt 10.0 then begin
+			if i eq 0 then $
+				utplot, tim_sim, vel_sim, $
+					ytitle = 'Velocity (km s!U-1!N)', $
+					/noerase, $
+					yr = [1, 3000], $
+					/ys, $
+					/xs, $
+					xrange = [tstart, tend], $
+					position = [xposl, 0.07, xposr, 0.52], $
+					thick=4, $
+					;symsize=1.5, $
+					/ylog, $
+					color = 10;, $
+					;linestyle=2
 
+			print, 'Cold angle is: '+string(angle, format='(I03)')		
+
+			if i gt 0 then $	
+				outplot, tim_sim, vel_sim, color = 5, thick=4, linestyle=2
+
+			
+		endif		
 	endfor	
 
 	for i=0, n_elements(hot_dt_files)-1 do begin
@@ -110,35 +120,49 @@ pro aia_dt_kins, tstart, tend
 		times = map_points.times
 		angle = map_points.angle
 
-		utplot, times, dis, $
-				title = 'Points from dt map', $
-				ytitle ='Distance (Mm)', $
-				yr = [40, 350], $
-				/xs, $
-				xrange = [tstart, tend], $
-				/ys, $
-				/noerase, $
-				color = 3, $
-				psym=1, $
-				position = [xposl, 0.55, xposr, 0.95]	
+		;utplot, times, dis, $
+		;		title = 'Points from dt map', $
+		;		ytitle ='Distance (Mm)', $
+		;		yr = [40, 350], $
+		;		/xs, $
+		;		xrange = [tstart, tend], $
+		;		/ys, $
+		;		/noerase, $
+		;		color = 3, $
+		;		psym=1, $
+		;		position = [xposl, 0.55, xposr, 0.95], $
+		;		xtickformat='(A1)'	
 
-		xyouts, times[n_elements(times)-1], dis[n_elements(dis)-1]+5., string(angle, format='(I03)'), $
-				/data, color=3
+		;xyouts, times[n_elements(times)-1], dis[n_elements(dis)-1]+5., string(angle, format='(I03)'), $
+		;		/data, color=3
 
 		calc_kins, times, dis, color=3, tim_sim=tim_sim, vel_sim=vel_sim
 
-		utplot, tim_sim, vel_sim, $
-			ytitle = 'Velocity (km/s)', $
-			/noerase, $
-			yr = [1, 3000], $
-			/ys, $
-			/xs, $
-			xrange = [tstart, tend], $
-			position = [xposl, 0.05, xposr, 0.5], $
-			thick=1, $
-			symsize=1.5, $
-			/ylog, $
-			color = 3		
+		if vel_sim[0] lt 10.0 then begin
+			if i eq 0 then $
+				utplot, tim_sim, vel_sim, $
+					ytitle = 'Velocity (km s!U-1!N)', $
+					/noerase, $
+					yr = [1, 3000], $
+					/ys, $
+					/xs, $
+					xrange = [tstart, tend], $
+					position = [xposl, 0.07, xposr, 0.52], $
+					thick=4, $
+					;symsize=1.5, $
+					/ylog, $
+					color = 3
+
+			if i gt 0 then $	
+				outplot, tim_sim, vel_sim, color=3, thick=4
+
+		print, 'Hot angle is: '+string(angle, format='(I03)')			
+			
+
+			;xyouts, times[fix(n_elements(times)/2)], dis[fix(n_elements(times)/2)]+5., string(angle, format='(I03)'), $
+			;	/data, color=3
+		
+		endif	
 
 	endfor	
 
