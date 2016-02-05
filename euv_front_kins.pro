@@ -45,7 +45,7 @@ pro euv_front_kins
 	endfor	 
 
 	err = displs
-	err[*] = 50.0*727.0 ;km
+	err[*] = 25.0*727.0 ;km
 
 	window, 1, xs=600, ys=600
 	utplot, times_tot, displs, $

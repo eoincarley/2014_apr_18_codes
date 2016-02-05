@@ -5,7 +5,7 @@ pro cme_back_extrapolate
 
 	swap_c2_nrh_20140418
 	AU = 150e6 			; km
-	cme_speed = 812.0 	; km/s
+	cme_speed = 1000.0 	; km/s
 	time = 14.0*60.0
 	pos_shift = cme_speed*time
 	arc_shift = atan(pos_shift/AU)*!radeg*3600.0
@@ -18,7 +18,6 @@ pro cme_back_extrapolate
 	angle1=12.
 	angle2=-135.
 	angles = (findgen(100)*(angle2-angle1)/99.0)+angle1
-
 
     ; Choose origin point
 

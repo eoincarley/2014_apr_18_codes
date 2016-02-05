@@ -88,10 +88,12 @@ pro plot_goes, t1, t2
 				linestyle=[0,0], $
 				color=[3,5], $
 				box=0, $
-				pos = [0.12, 0.975], $
+				pos = [0.12, 0.98], $
 				/normal, $
 				charsize=0.8, $
 				thick=3
+
+		xyouts, 0.925, 0.96, 'a', /normal		
 
 END
 
@@ -136,25 +138,30 @@ pro plot_RHESSI, t0, t1
 	times_rate = obj -> getaxis(/ut) 
 
 	set_line_color
-	utplot, times_rate, data[0, *], $
-			thick=3, $
+	plot_indeces = where(times_rate gt anytim('2014-04-18T12:50:00', /utim))
+
+	utplot, times_rate[plot_indeces], data[0, plot_indeces], $
+			thick=5, $
 			/xs, $ 
 			/ys, $
 			/ylog, $
+			xr=anytim([file2time(t0), file2time(t1)], /utim), $
 			yr = [1, 1e4], $
 			XTICKFORMAT="(A1)", $
 			xtitle=' ', $
 			ytitle='Count Rate (s!U-1!N detector!U-1!N)', $
-			color=0, $
+			color=6, $
 			pos = [0.11, 0.6, 0.95, 0.8], $
 			/noerase, $
 			/normal
 
-	for i=1, n_elements(data[*, 0])-1 do begin
-		counts = data[i, *]
-		outplot, times_rate, counts, $
-			color = i+1, $
-			thick=3
+	colors = [6,3,4,5,7,10];6,3,4,5];,7,8,10];,8,9,10, 0,2,3,4,5]		
+
+	for i=1, n_elements(data[*, 0])-5 do begin
+		counts = data[i, plot_indeces]
+		outplot, times_rate[plot_indeces], counts, $
+			color = colors[i], $
+			thick=5
 	endfor			
 
 	flags = obj -> getdata(class='flag')
@@ -174,14 +181,12 @@ pro plot_RHESSI, t0, t1
 	saa_time0 = times_rate[saa_index[0]]
 	saa_time1 = times_rate[saa_index[n_elements(saa_index)-1]]
 
-	vline, saa_time0, color=6, thick=4
-	vline, saa_time1, color=6, thick=4
-	plots, [saa_time0, saa_time1], [7000, 7000], color=6, thick=4
+	vline, saa_time0-60*4.0, color=9, thick=5
+	;vline, saa_time1-60*5.0, color=6, thick=4
+	plots, [saa_time0-60*4.0, saa_time1], [7000, 7000], color=9, thick=5
 
 	i1 = obj->get(/info)
 	energies = i1.energy_edges
-	colors = [0,2,3,4,5,6,7,8,9,10]
-
 
 	energies_str = strcompress(string(energies, format='(I5)'))
 	energies_legend = [ energies_str[0]+' -'+energies_str[1] + ' keV', $
@@ -193,15 +198,20 @@ pro plot_RHESSI, t0, t1
 						energies_str[6]+' -'+energies_str[7] + ' keV', $
 						energies_str[7]+' -'+energies_str[8] + ' keV', $
 						energies_str[8]+' -'+energies_str[9] + ' keV' ]
+					
+
+	xyouts, 0.14, 0.777, 'RHESSI', /normal, charsize=0.8					
 						
-	legend, energies_legend, $
-			color = colors, $
-			linestyle = intarr(9), $
+	legend, energies_legend[0:4], $
+			color = colors[0:4], $
+			linestyle = intarr(5), $
 			box=0, $
 			charsize=0.8, $
-			pos = [0.12, 0.77], $
+			pos = [0.12, 0.775], $
 			/normal, $
 			thick=3
+
+	xyouts, 0.925, 0.77, 'b', /normal				
 
 END
 
@@ -239,7 +249,9 @@ pro plot_fermi, date_start, date_end
 			/normal, $
 			thick=3
 
-	xyouts, 0.79, 0.585, 'FERMI GBM', /normal, charsize=0.8
+	xyouts, 0.785, 0.582, 'FERMI GBM', /normal, charsize=0.8
+
+	xyouts, 0.925, 0.58, 'c', /normal	
 
 END
 
@@ -266,6 +278,8 @@ pro goes_dam_orfees, postscript=postscript
 		loadct, 0
 		window, xs=900, ys=1200, retain=2
 		!p.charsize=1.5
+		!p.color=255
+		!p.background=0
 	endelse			
 
 		;***********************************;
@@ -314,8 +328,11 @@ pro goes_dam_orfees, postscript=postscript
 		dam_tim0 = anytim(file2time(time0), /time_only, /trun, /yoh)
 		dam_tim1 = anytim(file2time(time1), /time_only, /trun, /yoh)
 
-			;dam_spec = slide_backsub(dam_spec, dam_time, 10.0*60.0, /average)	
-		dam_spec = constbacksub(dam_spec, /auto)
+		dam_spec = slide_backsub(dam_spec, dam_time, 15.0*60.0, /minimum)	
+		dam_spec = simple_pass_filter(dam_spec, dam_time, dam_freqs, /low_pass, /time_axis, smoothing=10)	
+		
+		;dam_spec = alog10(dam_spec)	
+		;dam_spec = constbacksub(dam_spec, /auto)
 
 
 		;***********************************;
@@ -337,10 +354,13 @@ pro goes_dam_orfees, postscript=postscript
 		reverse_ct
 		scl_lwr = -0.4				;Lower intensity scale for the plots.
 
-		plot_spec, dam_spec, dam_time, dam_freqs, [freq0, freq1], [time0, time1], scl0=-30, scl1=150
+		plot_spec, dam_spec, dam_time, dam_freqs, [freq0, freq1], [time0, time1], scl0=0.07, scl1=0.4
 		
 		plot_spec, orf_spec, orf_time, reverse(orf_freqs), [freq0, freq1], [time0, time1], scl0=-0.1, scl1=1.2
 		
+
+		set_line_color
+		xyouts, 0.925, 0.38, 'd', /normal, color=0
 	
 	
 	if keyword_set(postscript) then begin

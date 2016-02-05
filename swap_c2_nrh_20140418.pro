@@ -93,7 +93,7 @@ pro swap_c2_nrh_20140418, postscript = postscript
     xyouts, 0.16, 0.21, 'LASCO C2: '+ anytim(c2hdr.date_obs, /cc, /trun) +' UT', /normal
 
 
-    restore, '~/Data/2014_apr_18/white_light/cme_back_extrpln_20140418.sav'
+    restore, '~/Data/2014_apr_18/white_light/cme_back_extrpln_1000_20140418.sav'
     plots, xpoints, ypoints, /data, color=1, thick=3
     ;endfor      
     if keyword_set(postscript) then begin		

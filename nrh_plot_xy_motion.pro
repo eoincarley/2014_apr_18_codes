@@ -155,7 +155,7 @@ pro nrh_plot_xy_motion, postscript=postscript
 		device, /close
 		set_plot, 'x'
 	endif	
-;STOP
+
 	window, 1, xs=600, ys=600
 	utplot, times_tot, displs, $
 			ytitle='Displacement (km)', $
@@ -167,13 +167,16 @@ pro nrh_plot_xy_motion, postscript=postscript
 	q = replicate({fixed:0, limited:[0,0], limits:[0.D,0.D]}, 3)
 	;q(2).fixed = 1
 
-
-	start = [0, 1000, 0]
-	fit = 'p[0]*x^2 + p[1]*x + p[2]'			
-	;fit = 'p[0] + p[1]*x'
-	p = mpfitexpr(fit, tims_sec, displs, err, yfit=yfit, start);, parinfo=q)
+	err = displs
+	err[*] = 50.0*727. ;150 arcsecs is the approximate size of the source in the images. Multiple by 727 km (km per arcsec)
+	start = [0, 200]
+	fit = 'p[1]*x + p[0]'			
+	
+	p = mpfitexpr(fit, tims_sec, displs, err, perror=perror, yfit=yfit, start);, parinfo=q)
 
 	outplot, times_tot, yfit, linestyle=1
+
+	print, 'Speed: '+string(p[1]) +' '+ string(perror[1])
 
 	stop
 END

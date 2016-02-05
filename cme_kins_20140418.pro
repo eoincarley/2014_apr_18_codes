@@ -150,14 +150,14 @@ pro cme_kins_20140418, choose_points=choose_points
 	;-------------------------;
 	;	   Quadratic fit      ;
 	err = front_rsun
-	err[*] = 0.25
+	err[*] = findgen(n_elements(err))*(0.5 -0.1)/(n_elements(err)-1) + 0.1
 	start = [1.0, result[1], 0]
 	fit = 'p[0]*x^2 + p[1]*x + p[2]'			
 	p = mpfitexpr(fit, tims_sec, front_rsun, err, perror=perror, yfit=yfit, start);, parinfo=q)
 	outplot, times, yfit, linestyle=1
 	speed2 = p[1]*6.695e5
 	accel = p[0]*6.695e5
-	print, 'Initial speed from quadratic fit: ' +string(speed2)+ ' km/s'
+	print, 'Initial speed from quadratic fit: ' +string(speed2)+ ' '+string(perror[1]*6.695e5)+' km/s'
 	print, 'Acceleration from quadratic fit: ' +string(accel*1e3)+ ' m/s'
 
 
