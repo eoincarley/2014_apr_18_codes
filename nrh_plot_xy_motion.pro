@@ -20,7 +20,7 @@ pro nrh_plot_xy_motion, postscript=postscript
 	loadct, 0, /silent
 	cd,'~/Data/2014_apr_18/radio/nrh/clean_wresid/'
 	if keyword_set(postscript) then begin
-		setup_ps, 'nrh_source_motion.eps'
+		setup_ps, '~/nrh_source_motion.eps'
 	endif else begin
 		window, 0, xs=700, ys=700, retain=2
 		!p.charsize=1.5
@@ -97,12 +97,13 @@ pro nrh_plot_xy_motion, postscript=postscript
 
 		sym = symbol[j]
 		
-		step=30		; This step size (or 30) produces a speed that mathces what it should be e.g., 
-					; simply taking the first and last points as displacements and a time of 500 seconds gives ~360 km/s
+		step=10		; This step size (or 30) produces a speed that mathces what it should be e.g., 
+					; simply taking the first and last points as displacements and a time of 500 seconds gives ~360 km/s			
 		for i=0, n_elements(xarcs)-(step+1), step do begin
 			
 				color = interpol(colors, tcolors, anytim(times[i], /utim))
-				plots, xarcs[i], yarcs[i], color=color, psym=sym, symsize=1.2
+				plots, xarcs[i], yarcs[i], color=color, psym=sym, symsize=2.0
+				;if i eq 0.0 or xarcs[i]*xarcs[i+1] lt 0.0 then xyouts, xarcs[i]+35.0, yarcs[i]+20.0, 'NRH '+string(freq, format='(I3)')+' MHz', /data, color=color
 			
 				x1 = xarcs[i]
 				x2 = xarcs[i+step]
@@ -112,7 +113,7 @@ pro nrh_plot_xy_motion, postscript=postscript
 
 				displ_arcs = sqrt( (x2-x1)^2 + (y2-y1)^2 )
 				displ_degs = displ_arcs/3600.0
-				displ = AU*tan(displ_degs*!dtor)	;km
+				displ = AU*tan(displ_degs*!dtor)	; km
 
 				if j eq 0 and i eq 0 then begin
 					displs = displ 
@@ -125,17 +126,16 @@ pro nrh_plot_xy_motion, postscript=postscript
 					endif
 						
 				endelse	
-
+		
 			;wait, 0.1
 		endfor	 
-
 
 		if j eq 0 then freqs = 'NRH '+string(freq, format='(I3)')+' MHz' else freqs = [freqs, 'NRH '+string(freq, format='(I3)')+' MHz']
 		
 	endfor	
 
 	set_line_color
-	legend, reverse(freqs), psym=reverse(symbol), box=0, /bottom, /left, color=0, charsize=1.5
+	legend, reverse(freqs), psym=reverse(symbol), box=0, /bottom, /left, color=0, charsize=2.0
 
 	tims = interpol(tcolors, colors, [0,50,100,150,200,250])
 	tims = anytim(tims, /cc, /time, /trun)
@@ -155,7 +155,7 @@ pro nrh_plot_xy_motion, postscript=postscript
 		device, /close
 		set_plot, 'x'
 	endif	
-
+STOP
 	window, 1, xs=600, ys=600
 	utplot, times_tot, displs, $
 			ytitle='Displacement (km)', $

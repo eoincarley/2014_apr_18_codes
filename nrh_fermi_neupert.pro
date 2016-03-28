@@ -25,13 +25,14 @@ pro plot_fermi, date_start, date_end
 	restore, FermiGBM_file
 
 	tims = anytim(ut, /utim)
-	counts = (smooth(binned[2,*], 50))
-	;counts = deriv(tims, counts) 
-	;counts = smooth((counts+0.05), 50)		;min(counts)
+	;counts_orig = (smooth(binned[0,*], 50))
+	counts = (smooth(binned[2,*], 10))
+	counts = deriv(tims, counts)
+	counts = smooth((counts+0.05), 10)		;min(counts)
 
 
 
-	utplot, tims, counts/max(counts), $
+	utplot, tims, (counts/max(counts)), $
 			;/ylog, $
 			yr=[0.1, 1.0], $
 			;position=[0.15, 0.15, 0.95, 0.95], $
@@ -152,12 +153,14 @@ pro plot_RHESSI, t0, t1
 END
 
 
-pro nrh_orfees_flux_plot_v2, frequency, postscript=postscript
+pro nrh_fermi_neupert, frequency, postscript=postscript
 
 	; This code plots flux v time for flux comparison figure in 2014-04-18 paper.
 
+	; Modification of nrh_orfees_flux_plot_v2.pro
+
 	if keyword_set(postscript) then begin
-		setup_ps, '~/nrh_orfees_flux_'+string(frequency, format='(I03)')+'.eps'
+		setup_ps, '~/nrh_orfees_fermi_flux_'+string(frequency, format='(I03)')+'.eps'
 	endif else begin
 		loadct, 0
 		!p.background=255
@@ -168,8 +171,8 @@ pro nrh_orfees_flux_plot_v2, frequency, postscript=postscript
 		window, 12, xs=700, ys=400
 	endelse
 
-		time0 = '20140418_124800'
-		time1 = '20140418_125800'
+		time0 = '20140418_124900'
+		time1 = '20140418_125000'
 		date_string = time2file(file2time(time0), /date)
 		orfees_folder = '~/Data/2014_apr_18/radio/orfees/'
 		nrh_folder = '~/Data/2014_apr_18/radio/nrh/'
@@ -182,7 +185,10 @@ pro nrh_orfees_flux_plot_v2, frequency, postscript=postscript
 		;***********************************;	
 
 		restore, orfees_folder+'orf_'+date_string+'_bsubbed_minimum.sav', /verb
-		orf_spec = orfees_struct.spec
+		orf_spec = simple_pass_filter(orfees_struct.spec, orfees_struct.time, $
+					orfees_struct.freq, /time, /high_pass, smooth=100)
+		
+
 		orf_time = orfees_struct.time
 		orf_freqs = reverse(orfees_struct.freq)
 		t_index = where(orf_time gt t0plot and orf_time lt t1plot)
@@ -200,33 +206,31 @@ pro nrh_orfees_flux_plot_v2, frequency, postscript=postscript
 				/xs, $
 				/ys, $
 				xr = [t0plot, t1plot], $
-				;xtitle = ' ', $
-				;XTICKFORMAT="(A1)", $
 				linestyle=0, $
-				yr=[0.1, 1.0], $
-				color=0;
-				
+				yr=[0.0, 1.0], $
+				;/ylog, $
+				color=0;, $;, $
 				;pos = [0.15, 0.12, 0.95, 0.45], $
 				;/noerase, $
 				;title='Orfees', $
 		;		xgridstyle = 1.0, $
 		;		ygridstyle = 1.0, $
 		;		ytitle='Normalised flux';, $
+				;XTICKFORMAT="(A1)", $
 				;xtitle=' '
 		
-
+plot_fermi, t0plot, t1plot
 		;***********************************;
 		;			  NRH Flux		
 		;***********************************;	
 
-
+STOP
 
 		nrh_flux_file = 'nrh_flux_'+string(frequency, format='(I03)')+'_20140418_src1.sav'
 		print, 'Reading '+nrh_flux_file 
 		restore, nrh_folder + nrh_flux_file, /verb
 		time = anytim(SFU_TIME_STRUCT.time, /utim)
-		flux = alog10(SFU_TIME_STRUCT.flux)
-		print, 'Max flux for source 2: ' + string(10^max(flux)) + ' (sfu)'
+		flux = (SFU_TIME_STRUCT.flux)
 		flux1 = flux/max(flux)
 		
 
@@ -257,15 +261,14 @@ pro nrh_orfees_flux_plot_v2, frequency, postscript=postscript
 		nrh_flux_file = 'nrh_flux_'+string(frequency, format='(I03)')+'_20140418_src2.sav'
 		print, 'Reading '+nrh_flux_file 
 		restore, nrh_folder + nrh_flux_file, /verb
-		time = anytim(SFU_TIME_STRUCT.time, /utim)		
-		flux = alog10(SFU_TIME_STRUCT.flux>0)	
-		print, 'Max flux for source 2: ' + string(10^max(flux)) + ' (sfu)'
+		time = anytim(SFU_TIME_STRUCT.time, /utim)
+		flux = (SFU_TIME_STRUCT.flux>0)			
 		flux2 = flux/max(flux)
 		remove_nans, flux2, flux2
 
-		outplot, time, flux2, $
-				color=5, $
-				linestyle=3		
+		;outplot, time, flux2, $
+	;			color=5, $
+;				linestyle=3		
 
 		result = C_CORRELATE(congrid(orfees_flux, 540), congrid(flux2, 540), lag, /cov)			
 		print, '---------------------'	
@@ -279,7 +282,7 @@ pro nrh_orfees_flux_plot_v2, frequency, postscript=postscript
 					
 		
 		
-		;plot_fermi, t0plot, t1plot
+		
 		;axis, yaxis=1
 		;plot_RHESSI, t0plot, t1plot
 

@@ -18,15 +18,17 @@ end
 
 pro radio_kins
 	
+	; Uses output of ft_to_speed. Only the frequency and time values are used!! Speed is calculated here again as a
+	; function of model fold. The fold at which the model gives a pre defined height for a given frequency is saved.
 	;
 	; A code to examine the influence of different models and radio drift of various features using 2014-Apr-18 event.
 	;
-
+	set_line_color
 	rsun = 6.95e8	; m
-	models = ['saito', 'newkirk', 'baum', 'leblanc', 'mann'];, 'hydro_stat']
-	colors=[4, 5, 6, 7, 10]	
+	models = ['saito', 'newkirk', 'baum', 'st_hilaire', 'leblanc', 'mann'];, 'hydro_stat']
+	colors=[4, 5, 6, 7, 8, 10]	
 	folder = '~/Data/2014_apr_18/radio/kinematics/'
-	radio_kins_files = findfile(folder+'/*kins*.sav')
+	radio_kins_files = findfile(folder+'/*kins*.sav')	
 	nsteps = 100
 	max_fold = 20.
 	min_fold = 1.
@@ -37,11 +39,14 @@ pro radio_kins
 		speeds = fltarr(nsteps)
 		all_model_speeds = findgen(n_elements(speeds), n_elements(models))
 
+		print, '**********************************'
+		print, 'Restoring: ' + radio_kins_files[i]
 		restore, radio_kins_files[i], /verb
-		times = radio_kins.times
+		times = radio_kins.times   	;From ft_to_speed
 		freqs = radio_kins.freqs
 		tim_sec = times - times[0]
 		density = freq_to_dens( (freqs*1e6)/2.0 )
+		density0 = freq_to_dens( (445.*1e6)/2.0 )	;Frequency chosen to normalise models
 
 		;---------------------------------------------------------;
 		;		Set up kinematics structure for each burst
@@ -57,7 +62,7 @@ pro radio_kins
 				/ylog, $
 				/nodata, $
 				;xtitle='Fold of the model', $
-				xtickformat='(A1)', $
+				;xtickformat='(A1)', $
 				ytitle='Speed (km s!U-1!N)', $
 				;title=radio_kins.name, $
 				position = [0.18, 0.4, 0.95, 0.95]		
@@ -71,18 +76,23 @@ pro radio_kins
 				result = linfit(tim_sec, rads, yfit=yfit)
 				speeds[k] = result[1]*rsun/1e3 	; km/s
 
+				rads0 = density_to_radius(density0, model=models[j], fold=folds[k])
+
 				;if limit_found eq 0 and total(rads ge 1.1) eq float(n_elements(rads)) then begin
 				;	physical_limit = [folds[k], speeds[k]]
 				;	print, folds[k]
 				;	limit_found = 1
 				;endif	
 
-				; This finds the model fold at which the largest frequency (lowest heigt) data position
-				; is close to and active region height ~150 Mm or ~1.2 Rsun heliocentric distance.
-				if min(rads) ge 1.14 and limit_found eq 0 then begin
+				; This finds the model fold at which the 445.0 MHz (lowest heigt) is
+				; is close to an sigmoid height of ~50 Mm or ~1.07 Rsun heliocentric distance.
+				if min(rads0) ge 1.1 and limit_found eq 0 then begin
 					physical_limit = [folds[k], speeds[k]]
 					limit_found = 1
+					print, models[j]
 					print, folds[k]
+					print, speeds[k]
+
 				endif	
 
 
@@ -98,11 +108,11 @@ pro radio_kins
 			all_model_speeds[*, j] = speeds
 
 		endfor
-	
-		save, burst_speeds, filename=folder+radio_kins.name+'_burst_model_speeds.sav'
+		folder = '~/'
+		save, burst_speeds, filename=folder+radio_kins.name+'_burst_model_speeds_100Mm.sav'
 
-		if i eq 1 then result=execute("legend, models, color=colors, linestyle=[0,0,0,0,0], box=0., /right, /top") else $
-			result=execute("legend, models, color=colors, linestyle=[0,0,0,0,0], box=0., /right, /bottom")
+		if i eq 1 then result=execute("legend, models, color=colors, linestyle=[0,0,0,0,0,0], box=0., /right, /top") else $
+			result=execute("legend, models, color=colors, linestyle=[0,0,0,0,0,0], box=0., /right, /bottom")
 
 		
 		;---------------------------------------------------------;

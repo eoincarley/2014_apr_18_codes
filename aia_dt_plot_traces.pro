@@ -15,7 +15,7 @@ pro setup_ps, name
 
 end
 
-pro aia_plot_dt_traces
+pro aia_dt_plot_traces
 
 	; Code simply to plot an AIA image and the vectors along which the distance
 	; time traces were taken

@@ -50,6 +50,8 @@ pro aia_dt_kins, tstart, tend, deproject
 
 	; tstart and tend in UT.
 
+	; Used by master_kins_20140418.pro
+
 	xposl = 0.15
 	xposr = 0.9
 

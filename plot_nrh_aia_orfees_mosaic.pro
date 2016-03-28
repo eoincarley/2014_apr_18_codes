@@ -8,7 +8,7 @@ pro setup_ps, name
           /helvetica, $
           /inches, $
           xsize=12, $
-          ysize=12, $
+          ysize=12/(1.666), $	; For a 4 x 3 (x, y) image.
           /encapsulate, $
           yoffset=5
 
@@ -19,15 +19,15 @@ pro plot_nrh_aia_orfees_mosaic, all_freqs=all_freqs, postscript=postscript
 
 	; Firstly, select the the time and frequency points from Orfées.
 	
-	;dam_orfees_oplot, time_points = times, freq_points = freqs, /choose
-	times = anytim( '2014-04-18T' + ['12:49:55', '12:50:41', '12:51:45', '12:53:03'], /utim )
+	dam_orfees_oplot, time_points = times, freq_points = freqs, /choose
+	;times = anytim( '2014-04-18T' + ['12:49:30', '12:50:30', '12:51:32', '12:52:50', '12:53:10']);, '12:56:10'], /utim )
 	;------------------------------------;
 	;			Window params
 	;
 	xsize = 1500
 	ysize = xsize
 	if keyword_set(postscript) then begin 
-		setup_ps, '~/aia_nrh_mosaic_20140418.eps'
+		setup_ps, '~/aia_nrh_mosaic_20140418_v2.eps'
 	endif else begin
 		loadct, 0
 		reverse_ct
@@ -36,12 +36,12 @@ pro plot_nrh_aia_orfees_mosaic, all_freqs=all_freqs, postscript=postscript
 		!x.thick=1
 	endelse	
 	
-	nrh_freqs = [228.0, 298.0, 327.0, 432.0] 	;[150.0, 173.0, 228.0, 270.0, 298.0, 327.0, 408.0, 432.0, 445.0]
+	nrh_freqs = [298.0, 327.0, 432.0] 	;[150.0, 173.0, 228.0, 270.0, 298.0, 327.0, 408.0, 432.0, 445.0]
 
 	nimages = n_elements(times) + 1
-	xpos = findgen(nimages)*(0.95 - 0.05)/(nimages-1) + 0.05
+	xpos = findgen(nimages)*(0.95 - 0.06)/(nimages-1) + 0.06
 	nfreqs = n_elements(nrh_freqs) + 1
-	ypos = findgen(nfreqs)*(0.95 - 0.05)/(nfreqs -1) + 0.05
+	ypos = findgen(nfreqs)*(0.95 - 0.06)/(nfreqs -1) + 0.06
 	
 	
 	if keyword_set(all_freqs) then begin
@@ -71,7 +71,7 @@ pro plot_nrh_aia_orfees_mosaic, all_freqs=all_freqs, postscript=postscript
 		;
 		; Plot image at each position
 		; 
-		colors = [2,3,4,10]	;indgen(n_elements(freqs)) + 2
+		colors = [10, 6, 4]	;indgen(n_elements(freqs)) + 2
 		img_num = 0
 		for i=n_elements(freqs)-1, 0, -1 do begin	; Backwards loop to plot highest frequency at the bottom
 			for j=0, n_elements(times)-1 do begin
@@ -92,7 +92,7 @@ pro plot_nrh_aia_orfees_mosaic, all_freqs=all_freqs, postscript=postscript
 			if i eq 0 then mosaic = [[pos]] else mosaic = [ [[mosaic]], [[pos]] ]
 		endfor		
 		yaspect=float(n_elements(times))
-
+		colors = 10.0-indgen(n_elements(times))
 	
 		if yaspect lt 1 then xsize = xsize*yaspect else ysize = ysize/yaspect
 		if ~keyword_set(postscript) then window, 20, xs=xsize, ys=ysize, retain=2
@@ -103,7 +103,7 @@ pro plot_nrh_aia_orfees_mosaic, all_freqs=all_freqs, postscript=postscript
 
 	if keyword_set(postscript) then begin
 		device, /close
-		set_plot, 'ps'
+		set_plot, 'x'
 	endif	
 
 END
@@ -178,18 +178,24 @@ pro nrh_aia_mosaic, times, freqs, positions=positions, color=color
 	;
 	;		 Plot diff image
 	;
-	FOV = [16.0, 16.0]
+	FOV = [12.0, 12.0]
 	CENTER = [600.0, -300.0]
 	loadct, 0, /silent
 
 	; Sort out label and tick formats based on image position
 	pos = positions
-	if pos[3] eq 0.945 then title = anytim(nrh_hdr.date_obs, /cc, /trun) else title = ' '
-	if pos[0] eq 0.055 and pos[1] eq 0.055 then labelfmt = ['(I4)', '(I4)', 'X (arcsecs)', 'Y (arcsecs)' ]	; x and y ticks
-	if pos[0] gt 0.055 and pos[1] eq 0.055 then labelfmt = ['(I4)', '(A1)', 'X (arcsecs)', ' ' ]	; x ticks
-	if pos[0] eq 0.055 and pos[1] gt 0.055 then labelfmt = ['(A1)', '(I4)', ' ', 'Y (arcsecs)' ]	; y ticks
-	if pos[0] gt 0.055 and pos[1] gt 0.055 then labelfmt = ['(A1)', '(A1)', ' ', ' ']	; no ticks
+	if pos[3] gt 0.945 then title = anytim(nrh_hdr.date_obs, /cc, /trun, /time_only)+' UT' else title = ' '
+	if pos[0] eq 0.065 and pos[1] eq 0.065 then labelfmt = ['(I4)', '(I4)', 'X (arcsecs)', 'Y (arcsecs)' ]	; x and y ticks
+	if pos[0] gt 0.065 and pos[1] eq 0.065 then labelfmt = ['(I4)', '(A1)', 'X (arcsecs)', ' ' ]	; x ticks
+	if pos[0] eq 0.065 and pos[1] gt 0.065 then labelfmt = ['(A1)', '(I4)', ' ', 'Y (arcsecs)' ]	; y ticks
+	if pos[0] gt 0.065 and pos[1] gt 0.065 then begin
+		labelfmt = ['(A1)', '(A1)', ' ', ' ']	; no ticks
+	endif else begin
+		; Just to cover when specific freqs and times are chosen.
+		lebelfmt = ['(I4)', '(I4)', 'X (arcsecs)', 'Y (arcsecs)' ]
+	endelse	
 
+	
 	plot_map, diff_map(map_aia, map_aia_pre), $
 		dmin = -20.0, $
 		dmax = 20.0, $
@@ -221,28 +227,61 @@ pro nrh_aia_mosaic, times, freqs, positions=positions, color=color
 	index2map, nrh_hdr, nrh_data, $
 			 nrh_map  
 
-	nrh_data = alog10(nrh_data)		
+	nrh_data = alog10(smooth(nrh_data, 1))		
 	nrh_map.data = nrh_data 
 
 	;		Define contour levels
 	max_val = max( (nrh_data) ,/nan) 									   
-	nlevels=7.0   
+	nlevels=6.0   
 	;top_percent = 0.8
 	top_contour = 9.0 		; Kelvin
-	bottom_contour = 7.9	; Kelvin
+	bottom_contour = 8.0	; Kelvin
 	levels = (dindgen(nlevels)*(top_contour - bottom_contour)/(nlevels-1.0)) + bottom_contour
 
+	freq_string = string(nrh_hdr.freq, format='(I3)')
+	case freq_string of		
+		'270': begin	
+				levels = [7.8, 7.9, levels]
+			   end
+		'298': begin
+				top_contour = 9.0 		; Kelvin
+				bottom_contour = 7.8	; Kelvin
+				levels = (dindgen(nlevels)*(top_contour - bottom_contour)/(nlevels-1.0)) + bottom_contour
+			   end  
+		'327': begin
+				top_contour = 9.0 		; Kelvin
+				bottom_contour = 7.8	; Kelvin
+				levels = (dindgen(nlevels)*(top_contour - bottom_contour)/(nlevels-1.0)) + bottom_contour
+			   end  	   
+		else: print, 'Using only high contours.'	   
+	endcase
+
+	levels = round(levels*10.0)/10.0
 	set_line_color
 	plot_map, nrh_map, $
 		/overlay, $
 		/cont, $
 		/noerase, $
 		levels=levels, $
-		/noxticks, $
-		/noyticks, $
+		;/noxticks, $
+		;/noyticks, $
 		/noaxes, $
-		thick=3, $
-		color=color
+		thick=7, $
+		color=0, $
+			C_LABELS = [1, 0, 1, 0, 1, 0, 1], $
+			C_ANNOTATE = string(levels, format='(f3.1)'), $
+			C_CHARSIZE = 0.9, $
+			C_CHARTHICK = 10.0
+
+
+
+	plot_helio, nrh_hdr.date_obs, $
+		/over, $
+		gstyle=0, $
+		gthick=3.0, $	
+		gcolor=255, $
+		grid_spacing=15.0
+
 
 	set_line_color
 	plot_map, nrh_map, $
@@ -252,11 +291,32 @@ pro nrh_aia_mosaic, times, freqs, positions=positions, color=color
 		/noxticks, $
 		/noyticks, $
 		/noaxes, $
-		thick=1.5, $
-		color=1
+		thick=5, $
+		color=color, $
+			C_LABELS =  [1, 0, 0, 0, 1, 0, 1], $
+			C_ANNOTATE = string(levels, format='(f3.1)'), $
+			C_CHARSIZE = 0.9, $
+			C_CHARTHICK = 4.0
+
+
+	; Just for black contour labels	
+	plot_map, nrh_map, $
+		/overlay, $
+		/cont, $
+		levels=levels, $
+		/noxticks, $
+		/noyticks, $
+		/noaxes, $
+		thick=-1, $
+		color=1, $
+			C_LABELS =  [1, 0, 1, 0, 1, 0, 1], $
+			C_ANNOTATE = string(levels, format='(f3.1)'), $
+			C_CHARSIZE = 0.9, $
+			C_CHARTHICK = 4.0	
 
 	set_line_color
-	xyouts, positions[0]+0.01, positions[1]+0.01, 'NRH ' + string(nrh_hdr.freq, format='(I3)') + ' MHz', /normal, charsize=1.0, color=color
+	if pos[2] gt 0.9 then $
+		xyouts, 0.95, positions[3]-0.07, 'NRH ' + string(nrh_hdr.freq, format='(I3)') + ' MHz', /normal, charsize=1.0, color=color, orientation=270.0
 	;xyouts, positions[0]+0.01, positions[3]+0.01,  anytim(nrh_hdr.date_obs, /cc, /trun, /time_only) +' UT', /normal, charsize=1.0
 
 

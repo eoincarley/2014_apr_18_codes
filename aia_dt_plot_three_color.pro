@@ -1,21 +1,21 @@
 pro stamp_date, wave1, wave2, wave3
    set_line_color
 
-   xpos_aia_lab = 0.18
-   ypos_aia_lab = 0.82
+   xpos_aia_lab = 0.17
+   ypos_aia_lab = 0.83
 
-   xyouts, xpos_aia_lab, ypos_aia_lab+0.07, wave1, alignment=0, /normal, color = 0, charthick=5, charsize=1.3
-   xyouts, xpos_aia_lab, ypos_aia_lab+0.07, wave1, alignment=0, /normal, color = 3, charthick=0.5, charsize=1.3
+   xyouts, xpos_aia_lab, ypos_aia_lab+0.07, wave1, alignment=0, /normal, color = 0, charthick=5
+   xyouts, xpos_aia_lab, ypos_aia_lab+0.07, wave1, alignment=0, /normal, color = 3, charthick=0.5
    
-   xyouts, xpos_aia_lab, ypos_aia_lab+0.035, wave2, alignment=0, /normal, color = 0, charthick=5, charsize=1.3
-   xyouts, xpos_aia_lab, ypos_aia_lab+0.035, wave2, alignment=0, /normal, color = 4, charthick=2, charsize=1.3
+   xyouts, xpos_aia_lab, ypos_aia_lab+0.035, wave2, alignment=0, /normal, color = 0, charthick=5
+   xyouts, xpos_aia_lab, ypos_aia_lab+0.035, wave2, alignment=0, /normal, color = 4, charthick=2
    
-   xyouts, xpos_aia_lab, ypos_aia_lab, wave3, alignment=0, /normal, color = 0, charthick=5, charsize=1.3
-   xyouts, xpos_aia_lab, ypos_aia_lab, wave3, alignment=0, /normal, color = 10, charthick=2, charsize=1.3
+   xyouts, xpos_aia_lab, ypos_aia_lab, wave3, alignment=0, /normal, color = 0, charthick=5
+   xyouts, xpos_aia_lab, ypos_aia_lab, wave3, alignment=0, /normal, color = 10, charthick=2
 
 END
 
-pro aia_dt_plot_three_color, ps=ps, choose_points=choose_points
+pro aia_dt_plot_three_color, ps=ps, choose_points=choose_points, ratio=ratio, oplot_fits=oplot_fits
 
 	;Code to plot the distance time maps from AIA
 
@@ -23,11 +23,11 @@ pro aia_dt_plot_three_color, ps=ps, choose_points=choose_points
 	!p.charsize = 1.0
 	;!p.charthick = 0.5
 
-	cd, '~/Data/2014_Apr_18/sdo/'
+	folder = '~/Data/2014_Apr_18/sdo/'	;'~/Data/2015_nov_04/sdo/event1/'	;'~/Data/2014_Apr_18/sdo/'
 	
 	if keyword_set(ps) then begin
 		set_plot, 'ps'
-		device, filename='~/aia_dt_maps_hot_20.eps', $
+		device, filename='~/aia_dt_maps_cool_20140418.eps', $
 				/encapsulate, $
 				/color, $ 
 				/inches, $
@@ -39,33 +39,47 @@ pro aia_dt_plot_three_color, ps=ps, choose_points=choose_points
 		window, 0, xs=600, ys=600
 	endelse
 
-	min_scl = -1
-	max_scl = 0.05
+	min_scl = -3
+	max_scl = 4
 	;-------------------------------------------;
 	;				Plot 171
 	;
 	angle = '020'
-	waves = ['094', '131', '335']
-	cd, '~/Data/2014_Apr_18/sdo/dist_time/'
-	restore, 'aia_'+waves[0]+'_dt_map_'+angle+'.sav', /verbose
+	waves = ['211', '193', '171']	;['094', '131', '335']	
+	cd, folder+'/dist_time/'
+	;restore, 'aia_'+waves[0]+'_dt_map_'+angle+'.sav', /verbose
+	restore, 'aia_'+waves[0]+'arc_dt_map.sav', /verbose
 	t_a = dt_map_struct.time
 	lindMm = dt_map_struct.distance	
 	distt_a = dt_map_struct.dtmap
-	distt_a = distt_a;/max(distt_a)				;	( distt_a - mean(distt_a) ) /stdev(distt_a)   
-	distt_a = distt_a ;> (min_scl) < (max_scl)
+	if ~keyword_set(ratio) then begin
+		for i=0, n_elements(lindMm)-1 do distt_a[*,i] = ( distt_a[*,i] - mean(distt_a[*,i]) ) /stdev(distt_a[*,i])   
+		distt_a = distt_a > (min_scl) < (max_scl)
+	endif else begin
+		distt_a = distt_a/max(distt_a)
+	endelse	
 
-	restore, 'aia_'+waves[1]+'_dt_map_'+angle+'.sav', /verbose
+	;restore, 'aia_'+waves[1]+'_dt_map_'+angle+'.sav', /verbose
+	restore, 'aia_'+waves[1]+'arc_dt_map.sav', /verbose	
 	t_b = dt_map_struct.time
 	distt_b = dt_map_struct.dtmap
-	distt_b = distt_b ;/max(distt_b)				;( distt_b - mean(distt_b) ) /stdev(distt_b)   
-	distt_b = distt_b ;> (min_scl) < (max_scl) 
+	if ~keyword_set(ratio) then begin
+		for i=0, n_elements(lindMm)-1 do distt_b[*,i] = ( distt_b[*,i] - mean(distt_b[*,i]) ) /stdev(distt_b[*,i])   
+		distt_b = distt_b > (min_scl) < (max_scl)
+	endif else begin
+		distt_b = distt_b/max(distt_b)
+	endelse	
 
-	restore, 'aia_'+waves[2]+'_dt_map_'+angle+'.sav', /verbose
+	;restore, 'aia_'+waves[2]+'_dt_map_'+angle+'.sav', /verbose
+	restore, 'aia_'+waves[1]+'arc_dt_map.sav', /verbose	
 	t_c = dt_map_struct.time
 	distt_c = dt_map_struct.dtmap
-	distt_c = distt_c ;/max(distt_c)				;( distt_c - mean(distt_c) ) /stdev(distt_c)   
-	distt_c = distt_c ;> (min_scl) < (max_scl)
-
+	if ~keyword_set(ratio) then begin
+		for i=0, n_elements(lindMm)-1 do distt_c[*,i] = ( distt_c[*,i] - mean(distt_c[*,i]) ) /stdev(distt_c[*,i])   
+		distt_c = distt_c > (min_scl) < (max_scl)
+	endif else begin
+		distt_c = distt_c/max(distt_c)
+	endelse	
 
 	arrs = [n_elements(t_a), n_elements(t_b), n_elements(t_c)]
 	val = max(arrs, t_max, subscript_min = t_min)
@@ -150,39 +164,75 @@ pro aia_dt_plot_three_color, ps=ps, choose_points=choose_points
 	min_tim = min_tim[5:n_elements(min_tim)-1]
 
 	
+	distt_a_hf = distt_a - smooth(distt_a, 10)
+	distt_b_hf = distt_b - smooth(distt_b, 10)
+	distt_c_hf = distt_c - smooth(distt_c, 10)
+
+	distt_a_lf = smooth(distt_a, 10)
+	distt_b_lf = smooth(distt_b, 10)
+	distt_c_lf = smooth(distt_c, 10)
+
+	distt_a = distt_a ;+ 0.5*distt_a_lf ;+ 0.3*distt_a_hf
+	distt_b = distt_b ;+ 0.5*distt_b_lf ;+ 0.3*distt_b_hf
+	distt_c = distt_c ;+ 0.5*distt_c_lf ;+ 0.3*distt_c_hf
+
+	;distt_a = smooth(distt_a, 3) - distt_a_hf
+	;distt_b = smooth(distt_b, 3) - distt_b_hf
+	;distt_c = smooth(distt_c, 3) - distt_c_hf
+
+
 	for i=5, sizex-1 do begin
-		plota[i-5, *] = distt_a[i, *]/distt_a[i-5, *] >0.7 <1.15 
-		plotb[i-5, *] = distt_b[i, *]/distt_b[i-5, *] >0.7 <1.15
-		plotc[i-5, *] = distt_c[i, *]/distt_c[i-5, *] >0.7 <1.15
+		if ~keyword_set(ratio) then begin
+			plota[i-5, *] = distt_a[i, *]	;/distt_a[i-5, *] >0.8 <1.15 
+			plotb[i-5, *] = distt_b[i, *]	;/distt_b[i-5, *] >0.8 <1.15
+			plotc[i-5, *] = distt_c[i, *]	;/distt_c[i-5, *] >0.8 <1.15
+		endif	
+
+		if keyword_set(ratio) then begin
+			diff = 6
+			plota[i-diff, *] = distt_a[i, *]/distt_a[i-diff, *] >0.8 <1.15 
+			plotb[i-diff, *] = distt_b[i, *]/distt_b[i-diff, *] >0.8 <1.15
+			plotc[i-diff, *] = distt_c[i, *]/distt_c[i-diff, *] >0.8 <1.15
+		endif	
 	endfor
 	
 
-	tstart = anytim('2014-04-18T12:00:00',/utim)
-	tend = anytim('2014-04-18T13:00:00',/utim)
+	tstart = anytim('2014-04-18T12:58:00',/utim)	;anytim('2014-04-18T12:00:00',/utim)
+	tend = anytim('2014-04-18T13:18:00',/utim)		;anytim('2014-04-18T13:00:00',/utim)
 	istart = closest(min_tim, tstart)
 	istop = closest(min_tim, tend) 
 	min_tim = min_tim[istart:istop]
+	hstart = 200.0 	;Mm
+	hindex0 = closest(lindMm, hstart)
+	hstop = 650.0 	;Mm
+	hindex1 = closest(lindMm, hstop)
 
-	truecolorim = [[[ plota[istart:istop, *] ]], [[ plotb[istart:istop, *] ]], [[ plotc[istart:istop, *] ]]]
+
+	truecolorim = [ [[ plota[istart:istop, hindex0:hindex1] ]], $
+				    [[ plotb[istart:istop, hindex0:hindex1] ]], $
+				    [[ plotc[istart:istop, hindex0:hindex1] ]] ]
 	;truecolorim = [[[ distt_a[istart:istop, 50:150] ]], [[ distt_b[istart:istop, 50:150] ]], [[ distt_c[istart:istop, 50:150] ]]] ;contruct RGB image
 
-	img = congrid(truecolorim, 500, 500, 3)
+	img = sigrange(congrid(truecolorim, 500, 500, 3))
 
+
+	rsun = 695.0 	;Mm
 	loadct, 1
-	spectro_plot, plota > (-25) < 25, min_tim, lindMm, $
+	spectro_plot, plota > (-25) < 25, min_tim, lindMm, $		; The origin dt slice was taken 0.1 Rsun inside solar limb
   				/xs, $
   				/ys, $
-  				ytitle = 'Distance (Mm)', $
+  				ytitle = 'Heliocentric Distance (Mm)', $
   				;xtitle='Start time: '+'2014-Apr-18 '+tstart+' UT', $
   				;title = 'AIA 171A', $
   				xr = [tstart, tend], $
+  				yr=[0, hstop], $
   				position = [0.15, 0.15, 0.95, 0.95], $
  				/normal, $
  				/noerase, $
 			 	xticklen=-0.015, $
 		        yticklen=-0.015
-			
 
+	loadct, 0, /silent  
     plot_image, img, true=3, $
     	position = [0.15, 0.15, 0.95, 0.95], $
     	XTICKFORMAT="(A1)", $
@@ -192,14 +242,19 @@ pro aia_dt_plot_three_color, ps=ps, choose_points=choose_points
 	 	xticklen=-0.001, $
         yticklen=-0.001
 
-    utplot, min_tim, lindMm, $
+    ; This allows a point and click for the distance and time.    
+    	utplot, min_tim, lindMm, $
 	  	/nodata, $
 	  	/xs, $
 	  	/ys, $
+	  	yr=[0, hstop], $
 	  	xr = [tstart, tend], $
 		position = [0.15, 0.15, 0.95, 0.95], $
 		/noerase, $
-		/normal
+		/normal, $
+		XTICKFORMAT="(A1)", $
+    	YTICKFORMAT="(A1)", $
+    	xtitle=' '
 
 
     stamp_date, 'AIA '+waves[0], 'AIA '+waves[1], 'AIA '+waves[2]
@@ -209,8 +264,9 @@ pro aia_dt_plot_three_color, ps=ps, choose_points=choose_points
 		point, tim, dis, /data
 		print, tim
 		map_points = { name:'dt_map_points', times:tim, dis:dis, angle:angle, waves:waves }
-		save, map_points, filenam='aia_'+channels+'_dtpoints_'+angle+'.sav'
+		save, map_points, filenam=folder+'euv_wave_arc.sav'	;'aia_'+channels+'_dtpoints_'+angle+'.sav'
 	endif
+
 
 	
 	if keyword_set(ps) then begin

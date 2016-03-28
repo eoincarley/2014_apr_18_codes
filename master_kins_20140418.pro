@@ -7,7 +7,7 @@ pro master_kins_20140418, postscript=postscript
 		!p.charsize = 1.2
 		!p.thick=1
 		set_plot, 'ps'
-		device, filename=folder+'kinematics_plot.eps', $
+		device, filename=folder+'kinematics_plot_v2.eps', $
 				/encapsulate, $
 				/color, $ 
 				/inches, $
@@ -66,7 +66,8 @@ pro master_kins_20140418, postscript=postscript
 				  burst_speeds.NEWKIRK_FOLD_SPEED[1], $
 				  burst_speeds.BAUM_FOLD_SPEED[1], $
 				  burst_speeds.LEBLANC_FOLD_SPEED[1], $
-				  burst_speeds.MANN_FOLD_SPEED[1] ]
+				  burst_speeds.MANN_FOLD_SPEED[1] ];, $
+				  ;burst_speeds.ST_HILAIRE_FOLD_SPEED[1] ]
 					  
 		max_vel = max(rvels)
 		min_vel = min(rvels)
@@ -81,7 +82,7 @@ pro master_kins_20140418, postscript=postscript
 
 		print, '-------------------'
 		print, 'Speed for '+radio_kins_files[i]+': '+string(mean_vel)+' + '+string([max_vel-mean_vel]*deproject)+' - '+string([min_vel-mean_vel])
-
+		STOP
 	endfor
 
 

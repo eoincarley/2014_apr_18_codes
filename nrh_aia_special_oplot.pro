@@ -1,4 +1,22 @@
-pro nrh_aia_special_oplot, diff_img=diff_img, hue = hue
+pro setup_ps, name
+  
+   set_plot,'ps'
+   !p.font=0
+   !p.charsize=1.5
+   device, filename = name, $
+          /color, $
+          /helvetica, $
+          /inches, $
+          xsize=9, $
+          ysize=8, $
+          bits_per_pixel=16, $
+          /encapsulate, $
+          yoffset=5
+
+end
+
+
+pro nrh_aia_special_oplot, diff_img=diff_img, hue=hue, postscript=postscript
 
 	;NRH and AIA composite images for 2014 April 18 event
 
@@ -10,7 +28,7 @@ pro nrh_aia_special_oplot, diff_img=diff_img, hue = hue
 	mreadfits_header, aia_files, ind, only_tags='exptime'
 	f = aia_files;[where(ind.exptime gt 1.)]
 
-	tstart = anytim(file2time('20140418_123045'), /utim)
+	tstart = anytim(file2time('20140418_125359'), /utim)
 	tend   = anytim(file2time('20140418_132500'), /utim)
 
 	mreadfits_header, f, ind
@@ -18,14 +36,7 @@ pro nrh_aia_special_oplot, diff_img=diff_img, hue = hue
 
 
 	winsz = 800.0
-	loadct, 1
-	!p.background=255
-	!p.color=0
-	window, xs=winsz, ys=winsz, retain = 2
-	!p.charsize=1.5
-
-	  
-
+	
 	  	FOR i = 5, n_elements(aia_files)-15 DO BEGIN
 
 	  	  	;------------------------------------------------;
@@ -46,13 +57,14 @@ pro nrh_aia_special_oplot, diff_img=diff_img, hue = hue
 					he_aia, $
 					data_aia
 				index2map, he_aia_pre, $
-					smooth(data_aia_pre, 5)/he_aia_pre.exptime, $
+					data_aia_pre/he_aia_pre.exptime, $
 					map_aia_pre, $
 					outsize = 4096
 				index2map, he_aia, $
-					smooth(data_aia, 5)/he_aia.exptime, $
+					data_aia/he_aia.exptime, $
 					map_aia, $
 					outsize = 4096	
+					
 				map_aia = diff_map(map_aia, map_aia_pre)
 				min_val = -25
 				max_val = 25.0	
@@ -68,6 +80,15 @@ pro nrh_aia_special_oplot, diff_img=diff_img, hue = hue
 			  	max_val = 200.0		
 			endelse		
 		  
+		  	if keyword_set(postscript) then begin
+		  		setup_ps, '~/source_merge1.eps'
+			endif else begin
+				loadct, 1
+				!p.background=255
+				!p.color=0
+				window, xs=winsz, ys=winsz, retain = 2
+				!p.charsize=1.5
+			endelse
 			;--------------------------------------------------;
 			;				  Plot diff image	
 			loadct, 0, /silent
@@ -101,17 +122,16 @@ pro nrh_aia_special_oplot, diff_img=diff_img, hue = hue
 			;endfor	
 			    
 			
-			cd, '~/Data/2014_Apr_18/radio/nrh/'
+			cd, '~/Data/2014_Apr_18/radio/nrh/clean_wresid/'
 			nrh_filenames = findfile('*.fts')
 
-			for j=0, n_elements(nrh_filenames)-1 do begin
-
+			;for j=0, n_elements(nrh_filenames)-1 do begin
+			j=7
 				;-------------------------------------------------;
 				;					PLOT NRH
 				;
 				tstart = anytim(he_aia.date_obs, /utim) ;+ 3.0
 				t0 = anytim(tstart, /yoh, /trun, /time_only)
-			  	stop
 			  	
 				nrh_file_index = j
 				read_nrh, nrh_filenames[nrh_file_index], $	; 432 MHz
@@ -168,13 +188,34 @@ pro nrh_aia_special_oplot, diff_img=diff_img, hue = hue
 				;		Define contour levels
 				max_val = max( (nrh_data) ,/nan) 							   
 				nlevels=5.0   
-				top_percent = 0.99
+				top_percent = 0.98
 				levels = (dindgen(nlevels)*(max_val - max_val*top_percent)/(nlevels-1.0)) $
 							+ max_val*top_percent
 				;levels = (dindgen(nlevels)*(max_val - 7.0)/(nlevels-1.0)) $
 				;			+ 7.0		
 
-				;			Overlay NRH contours
+				set_line_color
+				plot_map, nrh_map, $
+					/overlay, $
+					/cont, $
+					/noerase, $
+					levels=levels, $
+					;/noxticks, $
+					;/noyticks, $
+					/noaxes, $
+					thick=7, $
+					color=0
+
+
+
+				plot_helio, nrh_hdr.date_obs, $
+					/over, $
+					gstyle=0, $
+					gthick=3.0, $	
+					gcolor=255, $
+					grid_spacing=15.0
+
+
 				set_line_color
 				plot_map, nrh_map, $
 					/overlay, $
@@ -183,38 +224,50 @@ pro nrh_aia_special_oplot, diff_img=diff_img, hue = hue
 					/noxticks, $
 					/noyticks, $
 					/noaxes, $
-					thick=2.5, $
-					color=j					 	
+					thick=5, $
+					color=4
+
+
+				; Just for black contour labels	
+				plot_map, nrh_map, $
+					/overlay, $
+					/cont, $
+					levels=levels, $
+					/noxticks, $
+					/noyticks, $
+					/noaxes, $
+					thick=-1, $
+					color=1							 	
 
 				freq_tag = string(nrh_hdr.freq, format='(I03)')
 				;xyouts, 0.5, 0.86, 'AIA 171A, NRH '+freq_tag+' MHz  '+he_aia.date_obs+' UT', $
 				xyouts, 0.5, 0.86, 'AIA '+string(he_aia.wavelnth, format='(I3)')+' '+he_aia.date_obs+' UT', $
 						/normal, $
 						alignment=0.5, $
-						charsize=2.0
+						charsize=1.0
 
-				xyouts, 0.16, 0.82 - (j)/50.0, 'NRH '+freq_tag+' MHz (1e'+string(max_val, format='(f3.1)')+' K)', $
-						color=0, $
-						charthick=3, $
-						/normal	
+				;xyouts, 0.16, 0.82 - (j)/50.0, 'NRH '+freq_tag+' MHz (1e'+string(max_val, format='(f3.1)')+' K)', $
+				;		color=0, $
+				;		charthick=3, $
+				;		/normal	
 
-				xyouts, 0.16, 0.82 - (j)/50.0, 'NRH '+freq_tag+' MHz (1e'+string(max_val, format='(f3.1)')+' K)', $
-						color=j, $
-						charthick=1.5, $
-						/normal		
+				;xyouts, 0.16, 0.82 - (j)/50.0, 'NRH '+freq_tag+' MHz (1e'+string(max_val, format='(f3.1)')+' K)', $
+				;		color=j, $
+				;		charthick=1.5, $
+				;		/normal		
 
-				xyouts, 0.5, 0.82, nrh_hdr.date_obs+' UT', $
-						/normal, $
-						color=0, $
-						charthick=3
+				;xyouts, 0.5, 0.82, nrh_hdr.date_obs+' UT', $
+				;		/normal, $
+				;		color=0, $
+				;		charthick=3
 
-				xyouts, 0.5, 0.82, nrh_hdr.date_obs+' UT', $
-						/normal, $
-						color=2, $
-						charthick=1.5		
+				;xyouts, 0.5, 0.82, nrh_hdr.date_obs+' UT', $
+				;		/normal, $
+				;		color=2, $
+				;		charthick=1.5		
 	
 
-			endfor				
+			;endfor				
 
 			;xyouts, 0.15, 0.05, 'Contour levels: '+$
 			;				string(levels[0], format='(f3.1)')+$
@@ -226,10 +279,16 @@ pro nrh_aia_special_oplot, diff_img=diff_img, hue = hue
 
 
 			freq_tag = string(nrh_hdr.freq, format='(I03)')
-	
+			
+			if keyword_set(postscript) then begin
+				device, /close
+				set_plot,'x'
+			endif
 			;x2png, 'image_'+string(i-5, format='(I03)')+'.png'			
-
+STOP
 			if anytim(he_aia.date_obs, /utim) gt tend then BREAK
+
+
 	    ENDFOR
 STOP
 	    cd, '~/Data/2014_Apr_18/radio/nrh/'
