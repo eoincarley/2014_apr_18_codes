@@ -27,20 +27,19 @@ pro nrh_choose_centroid
 	cd, '~/Data/2014_apr_18/radio/nrh'
 	filenames = findfile('*.fts')
 
-	window, 0, xs=700, ys=700, retain=2
-	window, 1, xs=700, ys=700, retain=2
+	window, 0, xs=400, ys=400, retain=2
+	window, 1, xs=400, ys=400, retain=2
 	!p.charsize=1.5
 	
-
-	tstart = anytim(file2time('20140418_125310'), /utim)
-	tstop = anytim(file2time('20140418_125440'), /utim) 
+	tstart = anytim(file2time('20140418_125000'), /utim)	;anytim(file2time('20140418_125546'), /utim)	;anytim(file2time('20140418_125310'), /utim)
+	tstop = anytim(file2time('20140418_125440'), /utim)	;anytim(file2time('20140418_125650'), /utim)		;anytim(file2time('20140418_125440'), /utim) 
+	
 	i=0
-
 	while tstart lt tstop do begin
 
 		t0str = anytim(tstart, /yoh, /trun, /time_only)
 
-		read_nrh, filenames[2], $
+		read_nrh, filenames[7], $
 				  nrh_hdr, $
 				  nrh_data, $
 				  hbeg=t0str;, $ 
@@ -104,13 +103,14 @@ pro nrh_choose_centroid
 		nrh_data = nrh_map.data
 		data_section = nrh_data[x0:x1, y0:y1]
 
-		loadct, 3, /silent
-		plot_image, data_section > 1e5 <1e8
+		loadct, 16, /silent
+		plot_image, data_section > 1e4 <1e9
 
 
 		;-------------------------------;
 		;	   Choose data points	    ;
 		;								;
+		print, 'Choose approximate centroid.'
 		cursor, source_x, source_y, /data
 		source_x = (source_x)
 		source_y = (source_y)
@@ -141,6 +141,7 @@ pro nrh_choose_centroid
 		yjunk = dindgen( n_elements(junk_array[0,*]) )
 		result_pars = MPFIT2DFUN('my2Dgauss', xjunk, yjunk, junk_array, ERR, $
 			start_parms, perror=perror, yfit=yfit)
+
 		window, 3, xs=500, ys=500
 		shade_surf, yfit, charsize=3.0
 		result = yfit	
@@ -216,10 +217,10 @@ pro nrh_choose_centroid
 	colors = findgen(n_elements(xarcs))*(255)/(n_elements(xarcs)-1)
 
 	for i=0, n_elements(xarcs)-1 do plots, xarcs[i], yarcs[i], psym=1, color=150;colors[i]
-
+STOP
 	freq_string = string(nrh_hdr.freq, format='(I03)')
 	xy_arcs_struct = {name:'xy_src_motion', xarcs:xarcs, yarcs:yarcs, times:times, freq:nrh_hdr.freq}
-	save, xy_arcs_struct, filename='nrh_'+freq_string+'_src_xy_motion.sav', $
+	save, xy_arcs_struct, filename='~/nrh_'+freq_string+'_src_xy_motion.sav', $
 			description = 'xy coords in arc seconds'
 		
 			stop

@@ -7,7 +7,7 @@ pro master_kins_20140418, postscript=postscript
 		!p.charsize = 1.2
 		!p.thick=1
 		set_plot, 'ps'
-		device, filename=folder+'kinematics_plot_v2.eps', $
+		device, filename='~/kinematics_plot_v3.eps', $
 				/encapsulate, $
 				/color, $ 
 				/inches, $
@@ -48,15 +48,15 @@ pro master_kins_20140418, postscript=postscript
 	;---------------------------;
 	;		AIA kinematics
 	;
-	aia_dt_kins, tstart, tend, deproject
+	aia_dt_kins, tstart, tend, 1.0	; 1 here is deprojection
 
 	;deproject = 1.
 	;---------------------------;
 	;	  Radio kinematics
 	;
-	colors=[4,5,6,7,10]	
+	colors=[3,4,5,6,7,10]	
 	radio_kins_files = findfile('~/Data/2014_apr_18/radio/kinematics/*_burst_model_speeds.sav')
-	for i=0, n_elements(radio_kins_files)-1 do begin
+	for i=1, n_elements(radio_kins_files)-1 do begin
 
 		restore, radio_kins_files[i], /verb
 		times = burst_speeds.times
@@ -77,36 +77,54 @@ pro master_kins_20140418, postscript=postscript
 		outplot, [median_time], [mean_vel], psym=8, color=0, symsize=1.2
 		outplot, [median_time], [mean_vel], psym=8, color=colors[i], symsize=1.0
 		PLOTSYM, 0
-		oploterror, [median_time], [mean_vel], time_range[0], [max_vel-mean_vel]*deproject, /nobar, /hibar, /nohat, psym=8, color=0, symsize=1.2
+		oploterror, [median_time], [mean_vel], time_range[0], [max_vel*deproject-mean_vel], /nobar, /hibar, /nohat, psym=8, color=0, symsize=1.2
 		oploterror, [median_time], [mean_vel], time_range[0], [min_vel-mean_vel], /lobar, /nohat, psym=8, color=0, symsize=1.2
 
 		print, '-------------------'
-		print, 'Speed for '+radio_kins_files[i]+': '+string(mean_vel)+' + '+string([max_vel-mean_vel]*deproject)+' - '+string([min_vel-mean_vel])
-		STOP
+		print, 'Speed for '+radio_kins_files[i]+': '+string(mean_vel)+' + '+string([max_vel*deproject-mean_vel])+' - '+string([min_vel-mean_vel])
 	endfor
 
-
-	;---------------------------------;
+	;-----------------------------------------;
+	;
 	;	Radio source motion kinematics
 	;	Derived using nrh_plot_xy_motion.pro
 	;
-	rad_src_speed = 370.0;*deproject
+	rad_src_speed = 395.0;*deproject
 	radio_src_tim0 = anytim('2014-04-18T12:48:30', /utim)
 	radio_src_tim1 = anytim('2014-04-18T12:52:30', /utim)
 	radio_src_tim2 = anytim('2014-04-18T12:56:10', /utim)
 	radio_src_tim_range = [radio_src_tim1 - radio_src_tim0]
 
 
-
 	PLOTSYM, 0, /fill
-	outplot, radio_src_tim1, [rad_src_speed], psym=8, color=9, symsize=1.2
+	outplot, radio_src_tim1, [rad_src_speed], psym=8, color=6, symsize=1.2
 	PLOTSYM, 0
 	outplot, radio_src_tim1, [rad_src_speed], psym=8, color=0, symsize=1.2
-	oploterror, radio_src_tim1, [rad_src_speed], radio_src_tim_range, [80*deproject] + [rad_src_speed*deproject - rad_src_speed], /hibar, /nohat, psym=8, color=0, symsize=1.2
-	oploterror, radio_src_tim1, [rad_src_speed], radio_src_tim_range, [80], /lobar, /nohat, psym=8, color=0, symsize=1.2
+	oploterror, radio_src_tim1, [rad_src_speed], radio_src_tim_range, [50*deproject] + [rad_src_speed*deproject - rad_src_speed], /hibar, /nohat, psym=8, color=0, symsize=1.2
+	oploterror, radio_src_tim1, [rad_src_speed], radio_src_tim_range, [50], /lobar, /nohat, psym=8, color=0, symsize=1.2
+
+	;--------------------------------------------------------------------------;
+	;
+	;	Radio source motion kinematics for type IVm or volume filling source.
+	;	Derived using nrh_plot_xy_motion_typeIVm.pro
+	;
+	rad_src_speed = 405.0;*deproject
+	radio_src_tim0 = anytim('2014-04-18T12:54:46', /utim)
+	radio_src_tim1 = anytim('2014-04-18T12:55:36', /utim)
+	radio_src_tim2 = anytim('2014-04-18T12:56:26', /utim)
+	radio_src_tim_range = [radio_src_tim1 - radio_src_tim0]
 
 
-	;---------------------------------;
+	PLOTSYM, 0, /fill
+	outplot, radio_src_tim1, [rad_src_speed], psym=8, color=8, symsize=1.2
+	PLOTSYM, 0
+	outplot, radio_src_tim1, [rad_src_speed], psym=8, color=0, symsize=1.2
+	oploterror, radio_src_tim1, [rad_src_speed], radio_src_tim_range, [85*deproject] + [rad_src_speed*deproject - rad_src_speed], /hibar, /nohat, psym=8, color=0, symsize=1.2
+	oploterror, radio_src_tim1, [rad_src_speed], radio_src_tim_range, [85.], /lobar, /nohat, psym=8, color=0, symsize=1.2
+
+
+	;------------------------------;
+	;
 	;	EUV front kinematics
 	;	Derived using aia_three_color.pro point and click to get x and y arcsecs, 
 	;	then using euv_front_kins.pro to get velocity from the displacment.

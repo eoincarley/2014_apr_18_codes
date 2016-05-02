@@ -16,7 +16,7 @@ pro setup_ps, name
 end
 
 
-pro nrh_aia_special_oplot, diff_img=diff_img, hue=hue, postscript=postscript
+pro nrh_aia_special_oplot_typeIVm_speed, diff_img=diff_img, hue=hue, postscript=postscript
 
 	;NRH and AIA composite images for 2014 April 18 event
 
@@ -175,6 +175,10 @@ pro nrh_aia_special_oplot, diff_img=diff_img, hue=hue, postscript=postscript
 							0.15, $
 							0.15, $
 							/normal
+
+					; Plot the position of the max.
+					max_index = where(nrh_data eq max(nrh_data))
+					xy_pos_max = (array_indices(nrh_data, max_index) - nrh_hdr.crpix1)*nrh_hdr.cdelt1 + nrh_map.xc*2.
 				endif			
 			  	
 					
@@ -206,6 +210,7 @@ pro nrh_aia_special_oplot, diff_img=diff_img, hue=hue, postscript=postscript
 					thick=7, $
 					color=0
 
+				plots, xy_pos_max[0], xy_pos_max[1], psym=1, symsize=4, thick=3, color=5
 
 
 				plot_helio, nrh_hdr.date_obs, $

@@ -79,7 +79,7 @@ pro aia_dt_kins, tstart, tend, deproject
 		;		/xs, $
 		;		xrange = [tstart, tend], $
 		;		/ys, $
-		;		;/noerase, $
+		;		/noerase, $
 		;		color = 5, $
 		;		psym=1, $
 		;		position = [xposl, 0.55, xposr, 0.95], $
@@ -112,7 +112,10 @@ pro aia_dt_kins, tstart, tend, deproject
 		if angle eq [260] then $	
 				outplot, tim_sim, vel_sim, color = 5, thick=4, linestyle=2		
 
-		if i eq 0 then vel_fin = vel_sim[n_elements(vel_sim)-1]	else vel_fin = [vel_fin, vel_sim[n_elements(vel_sim)-1]]
+		if i eq 0 then $
+			vel_fin_cold = vel_sim[n_elements(vel_sim)-1] $
+			else $
+			vel_fin_cold = [vel_fin_cold, vel_sim[n_elements(vel_sim)-1]]
 
 	endfor	
 
@@ -131,11 +134,12 @@ pro aia_dt_kins, tstart, tend, deproject
 		;		/xs, $
 		;		xrange = [tstart, tend], $
 		;		/ys, $
-				;/noerase, $
+		;		/noerase, $
 		;		color = 3, $
 		;		psym=1, $
 		;		position = [xposl, 0.55, xposr, 0.95], $
 		;		xtickformat='(A1)'	
+		
 		;xyouts, times[n_elements(times)-1], dis[n_elements(dis)-1]+5., string(angle, format='(I03)'), $
 		;		/data, color=3
 
@@ -170,13 +174,15 @@ pro aia_dt_kins, tstart, tend, deproject
 			outplot, tim_sim, vel_sim, color = 3, thick=4, linestyle=2	
 
 
-		vel_fin = [vel_fin, vel_sim[n_elements(vel_sim)-1]]	
+		if i eq 0 then $
+			vel_fin_hot = vel_sim[n_elements(vel_sim)-1] $
+			else $
+			vel_fin_hot = [vel_fin_hot, vel_sim[n_elements(vel_sim)-1]]
 
 
 	endfor	
 
-	print, vel_fin
-	print, mean(vel_fin)
-	
+	;print, vel_fin
+	;print, mean(vel_fin)
 
 END

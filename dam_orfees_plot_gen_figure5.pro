@@ -33,7 +33,7 @@ pro plot_fermi, date_start, date_end
 			/ylog, $
 			yr=[0.1, 1.0], $
 			linestyle=2, $
-			thick=0.5, $
+			thick=3.5, $
 			xtitle=' ', $
 			XTICKFORMAT="(A1)", $
 			YTICKFORMAT="(A1)", $

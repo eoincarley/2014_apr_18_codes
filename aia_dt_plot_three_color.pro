@@ -4,18 +4,21 @@ pro stamp_date, wave1, wave2, wave3
    xpos_aia_lab = 0.17
    ypos_aia_lab = 0.83
 
-   xyouts, xpos_aia_lab, ypos_aia_lab+0.07, wave1, alignment=0, /normal, color = 0, charthick=5
+   xyouts, xpos_aia_lab+0.0012, ypos_aia_lab+0.07, wave1, alignment=0, /normal, color = 1, charthick=5
+   xyouts, xpos_aia_lab-0.0012, ypos_aia_lab+0.07, wave1, alignment=0, /normal, color = 1, charthick=5
    xyouts, xpos_aia_lab, ypos_aia_lab+0.07, wave1, alignment=0, /normal, color = 3, charthick=0.5
    
-   xyouts, xpos_aia_lab, ypos_aia_lab+0.035, wave2, alignment=0, /normal, color = 0, charthick=5
+   xyouts, xpos_aia_lab+0.0012, ypos_aia_lab+0.035, wave2, alignment=0, /normal, color = 0, charthick=5
+   xyouts, xpos_aia_lab-0.0012, ypos_aia_lab+0.035, wave2, alignment=0, /normal, color = 0, charthick=5
    xyouts, xpos_aia_lab, ypos_aia_lab+0.035, wave2, alignment=0, /normal, color = 4, charthick=2
    
-   xyouts, xpos_aia_lab, ypos_aia_lab, wave3, alignment=0, /normal, color = 0, charthick=5
+   xyouts, xpos_aia_lab+0.0012, ypos_aia_lab, wave3, alignment=0, /normal, color = 0, charthick=5
+   xyouts, xpos_aia_lab-0.0012, ypos_aia_lab, wave3, alignment=0, /normal, color = 0, charthick=5
    xyouts, xpos_aia_lab, ypos_aia_lab, wave3, alignment=0, /normal, color = 10, charthick=2
 
 END
 
-pro aia_dt_plot_three_color, ps=ps, choose_points=choose_points, ratio=ratio, oplot_fits=oplot_fits
+pro aia_dt_plot_three_color, angle, postscript=postscript, choose_points=choose_points, ratio=ratio
 
 	;Code to plot the distance time maps from AIA
 
@@ -25,7 +28,7 @@ pro aia_dt_plot_three_color, ps=ps, choose_points=choose_points, ratio=ratio, op
 
 	folder = '~/Data/2014_Apr_18/sdo/'	;'~/Data/2015_nov_04/sdo/event1/'	;'~/Data/2014_Apr_18/sdo/'
 	
-	if keyword_set(ps) then begin
+	if keyword_set(postscript) then begin
 		set_plot, 'ps'
 		device, filename='~/aia_dt_maps_cool_20140418.eps', $
 				/encapsulate, $
@@ -39,16 +42,16 @@ pro aia_dt_plot_three_color, ps=ps, choose_points=choose_points, ratio=ratio, op
 		window, 0, xs=600, ys=600
 	endelse
 
-	min_scl = -3
+	min_scl = -2
 	max_scl = 4
 	;-------------------------------------------;
 	;				Plot 171
 	;
-	angle = '020'
-	waves = ['211', '193', '171']	;['094', '131', '335']	
+	;angle = '020'
+	waves = ['211', '193', '171']	;['094', '131', '335']	;
 	cd, folder+'/dist_time/'
-	;restore, 'aia_'+waves[0]+'_dt_map_'+angle+'.sav', /verbose
-	restore, 'aia_'+waves[0]+'arc_dt_map.sav', /verbose
+	restore, 'aia_'+waves[0]+'_dt_map_'+angle+'.sav', /verbose
+	;restore, 'aia_'+waves[0]+'arc_dt_map.sav', /verbose
 	t_a = dt_map_struct.time
 	lindMm = dt_map_struct.distance	
 	distt_a = dt_map_struct.dtmap
@@ -59,8 +62,8 @@ pro aia_dt_plot_three_color, ps=ps, choose_points=choose_points, ratio=ratio, op
 		distt_a = distt_a/max(distt_a)
 	endelse	
 
-	;restore, 'aia_'+waves[1]+'_dt_map_'+angle+'.sav', /verbose
-	restore, 'aia_'+waves[1]+'arc_dt_map.sav', /verbose	
+	restore, 'aia_'+waves[1]+'_dt_map_'+angle+'.sav', /verbose
+	;restore, 'aia_'+waves[1]+'arc_dt_map.sav', /verbose	
 	t_b = dt_map_struct.time
 	distt_b = dt_map_struct.dtmap
 	if ~keyword_set(ratio) then begin
@@ -70,8 +73,8 @@ pro aia_dt_plot_three_color, ps=ps, choose_points=choose_points, ratio=ratio, op
 		distt_b = distt_b/max(distt_b)
 	endelse	
 
-	;restore, 'aia_'+waves[2]+'_dt_map_'+angle+'.sav', /verbose
-	restore, 'aia_'+waves[1]+'arc_dt_map.sav', /verbose	
+	restore, 'aia_'+waves[2]+'_dt_map_'+angle+'.sav', /verbose
+	;restore, 'aia_'+waves[1]+'arc_dt_map.sav', /verbose	
 	t_c = dt_map_struct.time
 	distt_c = dt_map_struct.dtmap
 	if ~keyword_set(ratio) then begin
@@ -156,105 +159,109 @@ pro aia_dt_plot_three_color, ps=ps, choose_points=choose_points, ratio=ratio, op
 	distt_b = distt_b[loc_b, *] 
 	distt_c = distt_c[loc_c, *] 
 	
+	step_size = 5
 	sizex = (size(distt_a))[1]
 	sizey = (size(distt_a))[2]
-	plota = fltarr(sizex-5, sizey)
-	plotb = fltarr(sizex-5, sizey)
-	plotc = fltarr(sizex-5, sizey)
-	min_tim = min_tim[5:n_elements(min_tim)-1]
-
+	plota = fltarr(sizex, sizey)
+	plotb = fltarr(sizex, sizey)
+	plotc = fltarr(sizex, sizey)
+	;min_tim = min_tim[step_size:n_elements(min_tim)-1]
 	
 	distt_a_hf = distt_a - smooth(distt_a, 10)
 	distt_b_hf = distt_b - smooth(distt_b, 10)
 	distt_c_hf = distt_c - smooth(distt_c, 10)
 
-	distt_a_lf = smooth(distt_a, 10)
-	distt_b_lf = smooth(distt_b, 10)
-	distt_c_lf = smooth(distt_c, 10)
+	distt_a_lf = smooth(distt_a, 2)
+	distt_b_lf = smooth(distt_b, 2)
+	distt_c_lf = smooth(distt_c, 2)
 
-	distt_a = distt_a ;+ 0.5*distt_a_lf ;+ 0.3*distt_a_hf
-	distt_b = distt_b ;+ 0.5*distt_b_lf ;+ 0.3*distt_b_hf
-	distt_c = distt_c ;+ 0.5*distt_c_lf ;+ 0.3*distt_c_hf
+	distt_a = distt_a ;+ 0.7*distt_a_hf
+	distt_b = distt_b ;+ 0.7*distt_b_hf
+	distt_c = distt_c ;+ 0.7*distt_c_hf
 
 	;distt_a = smooth(distt_a, 3) - distt_a_hf
 	;distt_b = smooth(distt_b, 3) - distt_b_hf
 	;distt_c = smooth(distt_c, 3) - distt_c_hf
 
+	if ~keyword_set(ratio) then begin
+			plota = distt_a	;/distt_a[i-5, *] >0.8 <1.15 
+			plotb = distt_b	;/distt_b[i-5, *] >0.8 <1.15
+			plotc = distt_c	;/distt_c[i-5, *] >0.8 <1.15
+	endif else begin
+		for i=step_size, sizex-1 do begin
+			plota[i, *] = distt_a[i, *]/distt_a[(i-step_size)>0, *] >0.8 < 1.8
+			plotb[i, *] = distt_b[i, *]/distt_b[(i-step_size)>0, *] >0.8 < 1.8
+			plotc[i, *] = distt_c[i, *]/distt_c[(i-step_size)>0, *] >0.8 < 1.8
+		endfor
+	endelse
+	
+	tstart = anytim('2014-04-18T12:00:00',/utim) > min_tim[0]
+	tend = anytim('2014-04-18T13:10:00', /utim)	< min_tim[n_elements(min_tim)-1]
+	istart = closest(min_tim, tstart)
+	istop = closest(min_tim, tend)
+	
+	;-------------------------------------------;
+	;	The deletion of AIA images with an incorrect exposure time leads to the images having an uneven sampling in time.
+	;	The following two for loops find where the time is unevenly sample and inserts new times at the mininum sampling
+	;   of AIA (12 seconds). This gives an evenly sampled time array between start and end times with a cadence of 12 s.
+	;
+	min_t_int = 12.0
+	new_min_tim = min_tim[0]
+	for i=1, n_elements(min_tim)-1 do begin
 
-	for i=5, sizex-1 do begin
-		if ~keyword_set(ratio) then begin
-			plota[i-5, *] = distt_a[i, *]	;/distt_a[i-5, *] >0.8 <1.15 
-			plotb[i-5, *] = distt_b[i, *]	;/distt_b[i-5, *] >0.8 <1.15
-			plotc[i-5, *] = distt_c[i, *]	;/distt_c[i-5, *] >0.8 <1.15
-		endif	
+		int = min_tim[i] - min_tim[i-1] 
+		if int gt min_t_int then begin
+			n_new_tims = (int - (int mod min_t_int))/min_t_int
+			new_tims = (dindgen(n_new_tims)+1)*min_t_int + min_tim[i-1] 
+			new_min_tim = [new_min_tim, new_tims]	
+		endif else begin
+			new_min_tim = [new_min_tim, min_tim[i]]
+		endelse
 
-		if keyword_set(ratio) then begin
-			diff = 6
-			plota[i-diff, *] = distt_a[i, *]/distt_a[i-diff, *] >0.8 <1.15 
-			plotb[i-diff, *] = distt_b[i, *]/distt_b[i-diff, *] >0.8 <1.15
-			plotc[i-diff, *] = distt_c[i, *]/distt_c[i-diff, *] >0.8 <1.15
-		endif	
+	endfor
+	;-------------------------------------------;
+	;		Now create evenly space dt map
+	;
+	new_map_a = findgen(n_elements(new_min_tim), n_elements(lindMm))
+	new_map_b = findgen(n_elements(new_min_tim), n_elements(lindMm))
+	new_map_c = findgen(n_elements(new_min_tim), n_elements(lindMm))
+
+	for i=0, n_elements(new_min_tim)-1 do begin
+		index = closest(min_tim, new_min_tim[i])
+		new_map_a[i, *] = plota[index, *]
+		new_map_b[i, *] = plotb[index, *]
+		new_map_c[i, *] = plotc[index, *]
 	endfor
 	
+	; Take section of the array
+	hstop = 350.0 	;Mm
+	hindex = closest(lindMm, hstop)
+	istart = closest(new_min_tim, tstart)
+	istop = closest(new_min_tim, tend)
 
-	tstart = anytim('2014-04-18T12:58:00',/utim)	;anytim('2014-04-18T12:00:00',/utim)
-	tend = anytim('2014-04-18T13:18:00',/utim)		;anytim('2014-04-18T13:00:00',/utim)
-	istart = closest(min_tim, tstart)
-	istop = closest(min_tim, tend) 
-	min_tim = min_tim[istart:istop]
-	hstart = 200.0 	;Mm
-	hindex0 = closest(lindMm, hstart)
-	hstop = 650.0 	;Mm
-	hindex1 = closest(lindMm, hstop)
-
-
-	truecolorim = [ [[ plota[istart:istop, hindex0:hindex1] ]], $
-				    [[ plotb[istart:istop, hindex0:hindex1] ]], $
-				    [[ plotc[istart:istop, hindex0:hindex1] ]] ]
-	;truecolorim = [[[ distt_a[istart:istop, 50:150] ]], [[ distt_b[istart:istop, 50:150] ]], [[ distt_c[istart:istop, 50:150] ]]] ;contruct RGB image
-
-	img = sigrange(congrid(truecolorim, 500, 500, 3))
-
-
-	rsun = 695.0 	;Mm
-	loadct, 1
-	spectro_plot, plota > (-25) < 25, min_tim, lindMm, $		; The origin dt slice was taken 0.1 Rsun inside solar limb
-  				/xs, $
-  				/ys, $
-  				ytitle = 'Heliocentric Distance (Mm)', $
-  				;xtitle='Start time: '+'2014-Apr-18 '+tstart+' UT', $
-  				;title = 'AIA 171A', $
-  				xr = [tstart, tend], $
-  				yr=[0, hstop], $
-  				position = [0.15, 0.15, 0.95, 0.95], $
- 				/normal, $
- 				/noerase, $
-			 	xticklen=-0.015, $
-		        yticklen=-0.015
-
-	loadct, 0, /silent  
-    plot_image, img, true=3, $
+	truecolorim = [[[ new_map_a[istart:istop, 0:hindex] ]], [[ new_map_b[istart:istop, 0:hindex] ]], [[ new_map_c[istart:istop, 0:hindex] ]]]
+	
+	;window, 0, xs=500, ys=500	 
+	plot_image, truecolorim , true=3, $	;usually img
     	position = [0.15, 0.15, 0.95, 0.95], $
     	XTICKFORMAT="(A1)", $
     	YTICKFORMAT="(A1)", $
 	 	/noerase, $
 	 	/normal, $
 	 	xticklen=-0.001, $
-        yticklen=-0.001
+        yticklen=-0.001       
 
     ; This allows a point and click for the distance and time.    
-    	utplot, min_tim, lindMm, $
-	  	/nodata, $
-	  	/xs, $
-	  	/ys, $
-	  	yr=[0, hstop], $
+ 	utplot, new_min_tim, lindMm, $	;/rsun + 0.9, $
+	 	/nodata, $
+	 	/xs, $
+	 	/ys, $
+	 	yr=[0, lindMm(hindex)], $	;/rsun + 0.9, $
 	  	xr = [tstart, tend], $
 		position = [0.15, 0.15, 0.95, 0.95], $
 		/noerase, $
 		/normal, $
-		XTICKFORMAT="(A1)", $
-    	YTICKFORMAT="(A1)", $
-    	xtitle=' '
+    	ytitle='Distance (Mm)'
 
 
     stamp_date, 'AIA '+waves[0], 'AIA '+waves[1], 'AIA '+waves[2]
@@ -264,12 +271,12 @@ pro aia_dt_plot_three_color, ps=ps, choose_points=choose_points, ratio=ratio, op
 		point, tim, dis, /data
 		print, tim
 		map_points = { name:'dt_map_points', times:tim, dis:dis, angle:angle, waves:waves }
-		save, map_points, filenam=folder+'euv_wave_arc.sav'	;'aia_'+channels+'_dtpoints_'+angle+'.sav'
+		save, map_points, filenam='aia_'+channels+'_dtpoints_'+angle+'.sav'
 	endif
 
 
 	
-	if keyword_set(ps) then begin
+	if keyword_set(postscript) then begin
 		device, /close
 		set_plot,'x'
 	endif

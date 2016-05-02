@@ -15,10 +15,10 @@ pro setup_ps, name
 
 end
 
-pro nrh_plot_xy_motion, postscript=postscript
+pro nrh_plot_xy_motion_typeIVm, postscript=postscript
 
 	loadct, 0, /silent
-	cd,'~/Data/2014_apr_18/radio/nrh/';clean_wresid/'
+	cd,'~/Data/2014_apr_18/radio/nrh/'
 	if keyword_set(postscript) then begin
 		setup_ps, '~/nrh_source_motion.eps'
 	endif else begin
@@ -26,7 +26,7 @@ pro nrh_plot_xy_motion, postscript=postscript
 		!p.charsize=1.5
 	endelse	
 	
-	motion_files = findfile('~/Data/2014_apr_18/radio/nrh/nrh*src*motion.sav')
+	motion_files = 	findfile('~/nrh_432_src_xy_motion.sav') ;findfile('~/Data/2014_apr_18/radio/nrh/nrh*src*motion.sav')
 	image_file = findfile('*.fts')
 	AU = 149e6	;  km
 
@@ -58,7 +58,7 @@ pro nrh_plot_xy_motion, postscript=postscript
 	data[*] = 240
 	nrh_map.data = data
 	FOV = [7, 7]
-	CENTER = [750, -250]
+	CENTER = [700, -100]
 
 	plot_map, nrh_map, $
 		fov = FOV, $
@@ -77,7 +77,7 @@ pro nrh_plot_xy_motion, postscript=postscript
 
 	loadct, 39
 			
-	t1_colors = anytim(file2time('20140418_124830'), /utim)
+	t1_colors = anytim(file2time('20140418_125446'), /utim)
 	t2_colors = anytim(file2time('20140418_125650'), /utim)
 
 	ncols = 250
@@ -97,12 +97,15 @@ pro nrh_plot_xy_motion, postscript=postscript
 
 		sym = symbol[j]
 		
-		step=30		; This step size (or 30) produces a speed that mathces what it should be e.g., 
+		step=20		; This step size (or 30) produces a speed that mathces what it should be e.g., 
 					; simply taking the first and last points as displacements and a time of 500 seconds gives ~360 km/s			
 		for i=0, n_elements(xarcs)-(step+1), step do begin
 			
 				color = interpol(colors, tcolors, anytim(times[i], /utim))
 				plots, xarcs[i], yarcs[i], color=color, psym=sym, symsize=2.0
+				print, xarcs[i], yarcs[i]
+				print, anytim(times[i], /cc)
+				print, '-------'
 				;if i eq 0.0 or xarcs[i]*xarcs[i+1] lt 0.0 then xyouts, xarcs[i]+35.0, yarcs[i]+20.0, 'NRH '+string(freq, format='(I3)')+' MHz', /data, color=color
 			
 				x1 = xarcs[i]
@@ -135,7 +138,7 @@ pro nrh_plot_xy_motion, postscript=postscript
 	endfor	
 
 	set_line_color
-	legend, reverse(freqs), psym=reverse(symbol), box=0, /bottom, /left, color=0, charsize=2.0
+	;legend, reverse(freqs), psym=reverse(symbol), box=0, /bottom, /left, color=0, charsize=2.0
 
 	tims = interpol(tcolors, colors, [0,50,100,150,200,250])
 	tims = anytim(tims, /cc, /time, /trun)
@@ -145,7 +148,7 @@ pro nrh_plot_xy_motion, postscript=postscript
 			ticknames = tims, $
 			/vertical, $
 			/right, $
-			color=0, $
+			color=1, $
 			charsize=1.5, $
 			pos = [0.82, 0.15, 0.83, 0.85], $
 			title = 'Time on 2014-Apr-18 (UT)';, $
@@ -156,6 +159,7 @@ pro nrh_plot_xy_motion, postscript=postscript
 		set_plot, 'x'
 	endif	
 
+	displs = displs - displs[0]
 	window, 1, xs=600, ys=600
 	utplot, times_tot, displs, $
 			ytitle='Displacement (km)', $
@@ -168,7 +172,7 @@ pro nrh_plot_xy_motion, postscript=postscript
 	;q(2).fixed = 1
 
 	err = displs
-	err[*] = 30.0*727. ;30 arcsecs is approx size of the source in the images. Multiple by 727 km (km per arcsec)
+	err[*] = 10.0*727. ;10 arcsecs is 3*stdev of size of the source in the images. Multiple by 727 km (km per arcsec)
 	start = [0, 200]
 	fit = 'p[1]*x + p[0]'			
 	

@@ -240,7 +240,7 @@ pro dam_orfees_plot_gen_figure4, save_orfees = save_orfees, postscript=postscrip
 	;orf_spec = orf_spec + 0.5*orf_spec_high
 
 	plot_spec, smooth(dam_spec, 5), dam_time, dam_freqs, [freq0, freq1], [time0, time1], scl0=0.05, scl1=0.4
-	plot_spec, orf_spec, orf_time, reverse(orf_freqs), [freq0, freq1], [time0, time1], scl0=0.00, scl1=1.0
+	plot_spec, orf_spec, orf_time, reverse(orf_freqs), [freq0, freq1], [time0, time1], scl0=0.00, scl1=1.2
 
 	if keyword_set(time_marker) then begin
 		!p.thick=4

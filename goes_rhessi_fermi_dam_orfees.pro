@@ -241,7 +241,10 @@ pro plot_fermi, date_start, date_end
 
 	eband_str = string(eband[0,*], format='(f5.1)')
 
-	legend, [eband_str[0]+' keV', eband_str[1]+' keV', eband_str[2]+' keV', eband_str[3]+' keV'], $
+	legend, [eband_str[0]+'-'+eband_str[1]+' keV', $
+			 eband_str[1]+'-'+eband_str[2]+' keV', $
+			 eband_str[2]+'-'+eband_str[3]+' keV', $
+			 eband_str[3]+'-'+eband_str[4]+' keV'  ], $
 			color = [6,3,4,5], $
 			linestyle = [0,0,0,0], $
 			box=0, $
@@ -254,6 +257,7 @@ pro plot_fermi, date_start, date_end
 
 	xyouts, 0.925, 0.58, 'c', /normal	
 
+stop
 END
 
 
@@ -279,7 +283,7 @@ pro goes_rhessi_fermi_dam_orfees, postscript=postscript
 		setup_ps, 'goes_rhessi_fermi_dam_orfees_20140418.eps
 	endif else begin	
 		loadct, 0
-		window, xs=900, ys=1200, retain=2
+		window, 10, xs=900, ys=1200, retain=2
 		!p.charsize=1.5
 		!p.color=255
 		!p.background=0
