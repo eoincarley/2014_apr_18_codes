@@ -460,7 +460,7 @@ pro aia_three_color_for_movie, date = date, mssl = mssl, xwin = xwin, $
                  gcolor=255, $
                  grid_spacing=15.0 
 
-            oplot_nrh_on_three_color, i_c.date_obs      ;For the 2014-April-Event
+            oplot_nrh_on_three_color_for_movie, i_c.date_obs      ;For the 2014-April-Event
 
             stamp_date, i_a, i_b, i_c
 
