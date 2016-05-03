@@ -41,6 +41,27 @@ pro plot_spec, data, time, freqs, frange, trange, scl0=scl0, scl1=scl1
   	
 END
 
+function read_goes_txt, file
+
+	readcol, file, y, m, d, hhmm, mjd, sod, short_channel, long_channel
+	
+	;-------- Time in correct format --------
+	time  = strarr(n_elements(y))
+	
+	time[*] = string(y[*], format='(I04)') + string(m[*], format='(I02)') $
+	  + string(d[*], format='(I02)') + '_' + string(hhmm[*], format='(I04)')
+	    
+	time = anytim(file2time(time), /utim) 
+	
+	;------- Build data array --------------
+
+	goes_array = dblarr(3, n_elements(y))
+	goes_array[0,*] = time
+	goes_array[1,*] = long_channel
+	goes_array[2,*] = short_channel
+	return, goes_array
+
+END
 
 ;**********************************************;
 ;				Plot GOES
@@ -97,28 +118,6 @@ pro plot_goes, t1, t2
 
 END
 
-
-function read_goes_txt, file
-
-	readcol, file, y, m, d, hhmm, mjd, sod, short_channel, long_channel
-	
-	;-------- Time in correct format --------
-	time  = strarr(n_elements(y))
-	
-	time[*] = string(y[*], format='(I04)') + string(m[*], format='(I02)') $
-	  + string(d[*], format='(I02)') + '_' + string(hhmm[*], format='(I04)')
-	    
-	time = anytim(file2time(time), /utim) 
-	
-	;------- Build data array --------------
-
-	goes_array = dblarr(3, n_elements(y))
-	goes_array[0,*] = time
-	goes_array[1,*] = long_channel
-	goes_array[2,*] = short_channel
-	return, goes_array
-
-END
 
 ;**********************************************;
 ;				Plot RHESSI
@@ -249,15 +248,15 @@ pro plot_fermi, date_start, date_end
 			linestyle = [0,0,0,0], $
 			box=0, $
 			charsize=0.8, $
-			pos = [0.77, 0.58], $
+			pos = [0.72, 0.58], $
 			/normal, $
 			thick=3
 
-	xyouts, 0.785, 0.582, 'FERMI GBM', /normal, charsize=0.8
+	xyouts, 0.735, 0.582, 'FERMI GBM', /normal, charsize=0.8
 
 	xyouts, 0.925, 0.58, 'c', /normal	
 
-stop
+
 END
 
 
