@@ -2,14 +2,14 @@ pro setup_postscript, name, xsize, ysize
 
     set_plot,'ps'
     !p.font=0
-    !p.charsize=0.8
+    !p.charsize=1.0
     device, filename = name, $
           ;/decomposed, $
           /color, $
           /helvetica, $
           /inches, $
-          xsize=14, $;xsize/100, $
-          ysize=7, $;xsize/100, $
+          xsize=14, $ ;xsize/100, $
+          ysize=7, $ ;xsize/100, $
           /encapsulate, $
           bits_per_pixel=32;, $
          ; yoffset=5
@@ -36,7 +36,7 @@ pro stamp_date, i_a, i_b, i_c
    
    !p.charsize=1.2
    set_line_color
-   xpos_aia_lab = 0.075
+   xpos_aia_lab = 0.095
    ypos_aia_lab = 0.78
 
    xyouts, xpos_aia_lab+0.0012, ypos_aia_lab+0.05, 'AIA '+string(i_a.wavelnth, format='(I03)') +' A '+anytim(i_a.t_obs, /cc, /trun)+ ' UT', alignment=0, /normal, color = 0, charthick=4
@@ -65,7 +65,7 @@ pro aia_three_color_for_movie, date = date, mssl = mssl, xwin = xwin, $
     if ~keyword_set(im_type) then im_type = 'total_b' 
     if ~keyword_set(winnum) then winnum = 0 
    
-    !p.charsize = 1.0
+    !p.charsize = 1.2
     folder = '~/Data/elevate_db/'+date+'/SDO/AIA'
     time_stop = anytim('2014-04-18T13:10:00', /utim)  ;For the 2014-April-Event
 
@@ -286,45 +286,6 @@ pro aia_three_color_for_movie, date = date, mssl = mssl, xwin = xwin, $
     endelse
 
 
-    dam_folder = '~/Data/2014_apr_18/radio/dam/'
-    orfees_folder = '~/Data/2014_apr_18/radio/orfees/'
-    time0 = '20140418_122500'
-    time1 = '20140418_132000'
-    date_string = time2file(file2time(time0), /date)
-
-    ;***********************************;
-    ;       Read and process DAM        
-    ;***********************************;
-
-    restore,  dam_folder+'/NDA_'+date_string+'_1051.sav', /verb
-    dam_freqs = nda_struct.freq
-    daml = nda_struct.spec_left
-    damr = nda_struct.spec_right
-    times = nda_struct.times
-    restore, dam_folder+'/NDA_'+date_string+'_1151.sav', /verb
-    daml = [daml, nda_struct.spec_left]
-    damr = [damr, nda_struct.spec_right]
-    times = [times, nda_struct.times]
-    restore, dam_folder+'/NDA_'+date_string+'_1251.sav', /verb
-    daml = [daml, nda_struct.spec_left]
-    damr = [damr, nda_struct.spec_right]
-    times = [times, nda_struct.times]
-    dam_spec = damr + daml
-    dam_time = times
-    dam_tim0 = anytim(file2time(time0), /time_only, /trun, /yoh)
-    dam_tim1 = anytim(file2time(time1), /time_only, /trun, /yoh)
-    dam_spec = alog10(dam_spec)
-    dam_spec = constbacksub(dam_spec, /auto)
-
-    ;***********************************;
-    ;      Read Orfees      
-    ;***********************************;   
-    restore, orfees_folder+'orf_'+date_string+'_bsubbed_minimum.sav', /verb
-    orf_spec = orfees_struct.spec
-    orf_time = orfees_struct.time
-    orf_freqs = orfees_struct.freq
-
-
     ;-------------------------------------------------;
     ;        *********************************
     ;            Image Loop starts here
@@ -412,11 +373,11 @@ pro aia_three_color_for_movie, date = date, mssl = mssl, xwin = xwin, $
         loadct, 0, /silent
 
         if keyword_set(postscript) then $
-            setup_postscript, '~/Data/2014_apr_18/combos/AIA_dynspec_movie/image_'+string(img_num-lwr_lim, format='(I03)' )+'.eps', $
+            setup_postscript, '~/Data/2014_apr_18/combos/AIA_NRH_tricolor_movie/image_'+string(img_num-lwr_lim, format='(I03)' )+'.eps', $
                 2.0*(x_size+border), (y_size+border)/4.0
 
             plot_image, img, true=3, $
-                position = [border/4, border/2, x_size/2+border/4, y_size+border/2]/(x_size+border), $
+                position = [border/3., border/2, x_size/2+border/3, y_size+border/2]/(x_size+border), $
                 /normal, $
                 xticklen=-0.001, $
                 yticklen=-0.001, $
@@ -444,7 +405,7 @@ pro aia_three_color_for_movie, date = date, mssl = mssl, xwin = xwin, $
                 ; /noaxes, $
                 thick=2.5, $
                 color=0, $
-                position = [border/4, border/2, x_size/2+border/4, y_size+border/2]/(x_size+border), $ 
+                position = [border/3, border/2, x_size/2+border/3, y_size+border/2]/(x_size+border), $ 
                 /normal, $
                 /noerase, $
                 /notitle, $
@@ -458,33 +419,36 @@ pro aia_three_color_for_movie, date = date, mssl = mssl, xwin = xwin, $
                  gstyle=0, $
                  gthick=2.5, $  
                  gcolor=255, $
-                 grid_spacing=15.0 
+                 grid_spacing=15.0        
 
-            oplot_nrh_on_three_color_for_movie, i_c.date_obs      ;For the 2014-April-Event
+            plot_nrh_tri_color_for_movie, i_c.date_obs, [0,1,2], x_size, y_size     
 
-            stamp_date, i_a, i_b, i_c
+            stamp_date, i_a, i_b, i_c      
+            
+            ;oplot_nrh_on_three_color_for_movie, i_c.date_obs      ;For the 2014-April-Event
 
-            dam_orfees_plot_for_movie, orf_spec, orf_time, orf_freqs, $
-                                       dam_spec, dam_time, dam_freqs, $
-                                       time_marker=anytim(i_c.date_obs, /utim)
-
+            
+            ;dam_orfees_plot_for_movie, orf_spec, orf_time, orf_freqs, $
+            ;                           dam_spec, dam_time, dam_freqs, $
+            ;                           time_marker=anytim(i_c.date_obs, /utim)
         if keyword_set(postscript) then begin
             device, /close
             set_plot, 'x'
-        endif 
-        spawn, 'cp ~/Data/2014_apr_18/combos/AIA_dynspec_movie/image_'+string(img_num-lwr_lim, format='(I03)' )+'.eps ~/Data/2014_apr_18/combos/AIA_dynspec_movie/image_'+string(img_num-lwr_lim+1.0, format='(I03)' )+'.eps '    
+        endif     
+
+        spawn, 'cp ~/Data/2014_apr_18/combos/AIA_NRH_tricolor_movie/image_'+string(img_num-lwr_lim, format='(I03)' )+'.eps ~/Data/2014_apr_18/combos/AIA_NRH_tricolor_movie/image_'+string(img_num-lwr_lim+1.0, format='(I03)' )+'.eps '    
     
         cd, folder  ;change back to aia folder
         
-        if keyword_set(xwin) then x2png, folder + '/image_'+string(img_num-lwr_lim, format='(I03)' )+'.png'
-  
-        if keyword_set(zbuffer) then begin
-            img = tvrd(/true)
-            ;  write_png, 'SDO_3col_plain_'+time2file(i_a.t_obs, /sec)+'.png', img
-            ;  image_loc_name = folder + '/image_'+string(i-lwr_lim, format='(I03)' )+'.png' 
-            cd, '~
-            write_png, image_loc_name , img
-        endif
+                        if keyword_set(xwin) then x2png, folder + '/image_'+string(img_num-lwr_lim, format='(I03)' )+'.png'
+                  
+                        if keyword_set(zbuffer) then begin
+                            img = tvrd(/true)
+                            ;  write_png, 'SDO_3col_plain_'+time2file(i_a.t_obs, /sec)+'.png', img
+                            ;  image_loc_name = folder + '/image_'+string(i-lwr_lim, format='(I03)' )+'.png' 
+                            cd, '~
+                            write_png, image_loc_name , img
+                        endif
         print, img_num
         img_num = img_num + 2
 
@@ -496,7 +460,7 @@ pro aia_three_color_for_movie, date = date, mssl = mssl, xwin = xwin, $
         print,'-------------------'
         print,'Currently '+string(loop_time, format='(I04)')+' seconds per 3 color image.'
         print,'-------------------'
-    
+ 
         ;if anytim(i_a.date_obs, /utim) gt time_stop then BREAK  ;For the 2014-April-Event
     endfor
 
