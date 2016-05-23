@@ -103,14 +103,14 @@ pro aia_dt_kins, tstart, tend, deproject
 					thick=4, $
 					;symsize=1.5, $
 					/ylog, $
-					color = 10;, $
-					;linestyle=2
+					color = 10, $
+					linestyle=2
 
 			print, 'Cold angle is: '+string(angle, format='(I03)')
 
 		endif		
 		if angle eq [260] then $	
-				outplot, tim_sim, vel_sim, color = 5, thick=4, linestyle=2		
+				outplot, tim_sim, vel_sim, color = 5, thick=4, linestyle=0		
 
 		if i eq 0 then $
 			vel_fin_cold = vel_sim[n_elements(vel_sim)-1] $
@@ -159,7 +159,8 @@ pro aia_dt_kins, tstart, tend, deproject
 					;symsize=1.5, $
 					xgridstyle = 1.0, $
 					/ylog, $
-					color = 3
+					color = 3, $
+					linestyle=2
 
 					
 			if i gt 0 then $	
@@ -171,7 +172,7 @@ pro aia_dt_kins, tstart, tend, deproject
 		endif	
 
 		if angle eq 260 then $	
-			outplot, tim_sim, vel_sim, color = 3, thick=4, linestyle=2	
+			outplot, tim_sim, vel_sim, color = 3, thick=4, linestyle=0	
 
 
 		if i eq 0 then $
