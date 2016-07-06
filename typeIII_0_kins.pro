@@ -4,17 +4,17 @@ pro typeIII_0_kins
 	; and then analysing speeds with various model folds using radio_kins.
 
 	c = 2.997e8		; m/s
-	folder = '~/Data/2014_apr_18/radio/kinematics/'
+	folder = '~/Data/2014_apr_18/radio/kinematics/type_IIIs/'
 	restore, folder + 'typeIII_0_burst_model_speeds.sav'
 
 	speeds = [ burst_speeds.SAITO_FOLD_SPEED[1], $
-		  burst_speeds.NEWKIRK_FOLD_SPEED[1], $
-		  burst_speeds.BAUM_FOLD_SPEED[1], $
-		  burst_speeds.LEBLANC_FOLD_SPEED[1], $
-		  burst_speeds.MANN_FOLD_SPEED[1], $
-		  burst_speeds.ST_HILAIRE_FOLD_SPEED[1] ]
+				burst_speeds.NEWKIRK_FOLD_SPEED[1], $
+				burst_speeds.BAUM_FOLD_SPEED[1], $
+				burst_speeds.LEBLANC_FOLD_SPEED[1], $
+				burst_speeds.MANN_FOLD_SPEED[1], $
+				burst_speeds.ST_HILAIRE_0_FOLD_SPEED[1] ]
 
-	models = ['mann', 'saito', 'newkirk', 'baum', 'leblanc', 'st_hilaire'] 
+	models = ['mann', 'saito', 'newkirk', 'baum', 'leblanc', 'st_hilaire_0'] 
 
 	speeds = speeds*1e3		; m/s	  
 	speeds_c = speeds/c

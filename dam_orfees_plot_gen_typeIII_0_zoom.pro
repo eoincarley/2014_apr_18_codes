@@ -50,18 +50,19 @@ pro plot_spec, data, time, freqs, frange, trange, scl0=scl0, scl1=scl1
   				;xticks=1
   				;xtickv=[anytim('2014-04-18T12:43', /utim)]
   				;xtickname=['2014-04-18T12:43']
-  				xtickformat='(A1)', $
+  				;xtickformat='(A1)', $
   				xtitle = ' '
 
-  	axis, xaxis=0, xrange = [ trange[0], trange[1] ], xticks=2, xticklen = -0.012, $
-  			xtickname=['12:42:50', '12:43', '12:44:30']
+  	;axis, xaxis=0, xrange = [ trange[0], trange[1] ], xticks=2, xticklen = -0.012, $
+  	;		xtickname=['12:42:50', '12:43', '12:44:30']
 		
   	
 END
 
 
-pro dam_orfees_plot_gen_typeIII_zoom, save_orfees = save_orfees, postscript=postscript, time_marker=time_marker
+pro dam_orfees_plot_gen_typeIII_0_zoom, save_orfees = save_orfees, postscript=postscript, time_marker=time_marker
 
+	; First type III
 	; Code to read and process DAM and Orfees together
 
 	; If /save_orfees chosen, it will process and save Orfees dynamic spectrum. This uses slide_backsub on
@@ -71,8 +72,8 @@ pro dam_orfees_plot_gen_typeIII_zoom, save_orfees = save_orfees, postscript=post
 	orfees_folder = '~/Data/2014_apr_18/radio/orfees/'
 	freq0 = 10
 	freq1 = 1000
-	time0 = '20140418_123400'
-	time1 = '20140418_123530'
+	time0 = '20140418_123410'
+	time1 = '20140418_123500'
 	date_string = time2file(file2time(time0), /date)
 
 	;------------------------------------;
@@ -245,8 +246,8 @@ pro dam_orfees_plot_gen_typeIII_zoom, save_orfees = save_orfees, postscript=post
 
 	;orf_spec = orf_spec + 0.5*orf_spec_high
 
-	plot_spec, smooth(dam_spec, 5), dam_time, dam_freqs, [freq0, freq1], [time0, time1], scl0=0.05, scl1=0.4
-	plot_spec, smooth(orf_spec, 5), orf_time, reverse(orf_freqs), [freq0, freq1], [time0, time1], scl0=-0.15, scl1=0.5
+	plot_spec, smooth(dam_spec, 5), dam_time, dam_freqs, [freq0, freq1], [time0, time1], scl0=0.1, scl1=0.4
+	plot_spec, smooth(orf_spec, 5), orf_time, reverse(orf_freqs), [freq0, freq1], [time0, time1], scl0=-0.25, scl1=0.7
 
 	if keyword_set(time_marker) then begin
 		!p.thick=4

@@ -4,16 +4,17 @@ pro stamp_date, wave1, wave2, wave3
    xpos_aia_lab = 0.17
    ypos_aia_lab = 0.83
 
-   xyouts, xpos_aia_lab+0.0012, ypos_aia_lab+0.07, wave1, alignment=0, /normal, color = 1, charthick=5
-   xyouts, xpos_aia_lab-0.0012, ypos_aia_lab+0.07, wave1, alignment=0, /normal, color = 1, charthick=5
+   lbl_shift=0.003
+   xyouts, xpos_aia_lab+lbl_shift, ypos_aia_lab+0.07, wave1, alignment=0, /normal, color = 1, charthick=5
+   xyouts, xpos_aia_lab-lbl_shift, ypos_aia_lab+0.07, wave1, alignment=0, /normal, color = 1, charthick=5
    xyouts, xpos_aia_lab, ypos_aia_lab+0.07, wave1, alignment=0, /normal, color = 3, charthick=0.5
    
-   xyouts, xpos_aia_lab+0.0012, ypos_aia_lab+0.035, wave2, alignment=0, /normal, color = 0, charthick=5
-   xyouts, xpos_aia_lab-0.0012, ypos_aia_lab+0.035, wave2, alignment=0, /normal, color = 0, charthick=5
+   xyouts, xpos_aia_lab+lbl_shift, ypos_aia_lab+0.035, wave2, alignment=0, /normal, color = 0, charthick=5
+   xyouts, xpos_aia_lab-lbl_shift, ypos_aia_lab+0.035, wave2, alignment=0, /normal, color = 0, charthick=5
    xyouts, xpos_aia_lab, ypos_aia_lab+0.035, wave2, alignment=0, /normal, color = 4, charthick=2
    
-   xyouts, xpos_aia_lab+0.0012, ypos_aia_lab, wave3, alignment=0, /normal, color = 0, charthick=5
-   xyouts, xpos_aia_lab-0.0012, ypos_aia_lab, wave3, alignment=0, /normal, color = 0, charthick=5
+   xyouts, xpos_aia_lab+lbl_shift, ypos_aia_lab, wave3, alignment=0, /normal, color = 0, charthick=5
+   xyouts, xpos_aia_lab-lbl_shift, ypos_aia_lab, wave3, alignment=0, /normal, color = 0, charthick=5
    xyouts, xpos_aia_lab, ypos_aia_lab, wave3, alignment=0, /normal, color = 10, charthick=2
 
 END
@@ -24,13 +25,14 @@ pro aia_dt_plot_three_color, angle, postscript=postscript, choose_points=choose_
 
 	!p.font = 0
 	!p.charsize = 1.0
+	loadct, 0
 	;!p.charthick = 0.5
 
 	folder = '~/Data/2014_Apr_18/sdo/'	;'~/Data/2015_nov_04/sdo/event1/'	;'~/Data/2014_Apr_18/sdo/'
 	
 	if keyword_set(postscript) then begin
 		set_plot, 'ps'
-		device, filename='~/aia_dt_maps_cool_20140418.eps', $
+		device, filename='~/aia_dt_maps_hot_20140418.eps', $
 				/encapsulate, $
 				/color, $ 
 				/inches, $
@@ -48,7 +50,7 @@ pro aia_dt_plot_three_color, angle, postscript=postscript, choose_points=choose_
 	;				Plot 171
 	;
 	;angle = '020'
-	waves = ['211', '193', '171']	;['094', '131', '335']	;
+	waves = ['094', '131', '335']	;['211', '193', '171']	
 	cd, folder+'/dist_time/'
 	restore, 'aia_'+waves[0]+'_dt_map_'+angle+'.sav', /verbose
 	;restore, 'aia_'+waves[0]+'arc_dt_map.sav', /verbose
@@ -202,7 +204,7 @@ pro aia_dt_plot_three_color, angle, postscript=postscript, choose_points=choose_
 	
 	;-------------------------------------------;
 	;	The deletion of AIA images with an incorrect exposure time leads to the images having an uneven sampling in time.
-	;	The following two for loops find where the time is unevenly sample and inserts new times at the mininum sampling
+	;	The following two for loops find where the time is unevenly sampled and inserts new times at the mininum sampling
 	;   of AIA (12 seconds). This gives an evenly sampled time array between start and end times with a cadence of 12 s.
 	;
 	min_t_int = 12.0
@@ -264,7 +266,7 @@ pro aia_dt_plot_three_color, angle, postscript=postscript, choose_points=choose_
     	ytitle='Distance (Mm)'
 
 
-    stamp_date, 'AIA '+waves[0], 'AIA '+waves[1], 'AIA '+waves[2]
+    stamp_date, 'AIA '+waves[0]+' '+cgsymbol('angstrom'), 'AIA '+waves[1]+' '+cgsymbol('angstrom'), 'AIA '+waves[2]+' '+cgsymbol('angstrom')
     if waves[0] eq '094' then channels = 'hot' else channels='cool'
 			
 	if keyword_set(choose_points) then begin

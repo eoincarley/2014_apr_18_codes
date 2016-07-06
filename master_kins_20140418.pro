@@ -55,8 +55,8 @@ pro master_kins_20140418, postscript=postscript
 	;	  Radio kinematics
 	;
 	colors=[3,4,5,6,7,10]	
-	radio_kins_files = findfile('~/Data/2014_apr_18/radio/kinematics/*_burst_model_speeds.sav')
-	for i=1, n_elements(radio_kins_files)-1 do begin
+	radio_kins_files = findfile('~/Data/2014_apr_18/radio/kinematics/type_IIIs/*_burst_model_speeds.sav')
+	for i=0, n_elements(radio_kins_files)-1 do begin
 
 		restore, radio_kins_files[i], /verb
 		times = burst_speeds.times
@@ -66,13 +66,13 @@ pro master_kins_20140418, postscript=postscript
 				  burst_speeds.NEWKIRK_FOLD_SPEED[1], $
 				  burst_speeds.BAUM_FOLD_SPEED[1], $
 				  burst_speeds.LEBLANC_FOLD_SPEED[1], $
-				  burst_speeds.MANN_FOLD_SPEED[1] ];, $
-				  ;burst_speeds.ST_HILAIRE_FOLD_SPEED[1] ]
+				  burst_speeds.MANN_FOLD_SPEED[1], $
+				  burst_speeds.ST_HILAIRE_FOLD_SPEED[1] ]
 					  
 		max_vel = max(rvels)
 		min_vel = min(rvels)
 		mean_vel = mean(rvels) 
-
+STOP
 		PLOTSYM, 0, /fill
 		outplot, [median_time], [mean_vel], psym=8, color=0, symsize=1.2
 		outplot, [median_time], [mean_vel], psym=8, color=colors[i], symsize=1.0

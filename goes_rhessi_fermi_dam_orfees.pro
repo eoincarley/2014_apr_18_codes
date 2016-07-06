@@ -2,7 +2,7 @@ pro setup_ps, name
   
    set_plot,'ps'
    !p.font=0
-   !p.charsize=1.2
+   !p.charsize=1.3
    device, filename = name, $
           /color, $
           /helvetica, $
@@ -29,7 +29,10 @@ pro plot_spec, data, time, freqs, frange, trange, scl0=scl0, scl1=scl1
   				/xs, $
   				/ys, $
   				/ylog, $
-  				ytitle='Frequency (MHz)', $
+				XTICKFORMAT="(A1)", $
+				YTICKFORMAT="(A1)", $
+				xtitle=' ', $
+  				;ytitle='Frequency (MHz)', $
   				;title = 'Orfees and DAM', $
   				yr=[ frange[0], frange[1] ], $
   				xrange = [ trange[0], trange[1] ], $
@@ -111,7 +114,7 @@ pro plot_goes, t1, t2
 				box=0, $
 				pos = [0.12, 0.98], $
 				/normal, $
-				charsize=0.8, $
+				charsize=1.2, $
 				thick=3
 
 		xyouts, 0.925, 0.96, 'a', /normal		
@@ -199,13 +202,13 @@ pro plot_RHESSI, t0, t1
 						energies_str[8]+' -'+energies_str[9] + ' keV' ]
 					
 
-	xyouts, 0.14, 0.777, 'RHESSI', /normal, charsize=0.8					
+	xyouts, 0.14, 0.777, 'RHESSI', /normal, charsize=1.2					
 						
 	legend, energies_legend[0:4], $
 			color = colors[0:4], $
 			linestyle = intarr(5), $
 			box=0, $
-			charsize=0.8, $
+			charsize=1.2, $
 			pos = [0.12, 0.775], $
 			/normal, $
 			thick=3
@@ -247,12 +250,12 @@ pro plot_fermi, date_start, date_end
 			color = [6,3,4,5], $
 			linestyle = [0,0,0,0], $
 			box=0, $
-			charsize=0.8, $
-			pos = [0.72, 0.58], $
+			charsize=1.2, $
+			pos = [0.12, 0.58], $
 			/normal, $
 			thick=3
 
-	xyouts, 0.735, 0.582, 'FERMI GBM', /normal, charsize=0.8
+	xyouts, 0.135, 0.582, 'FERMI GBM', /normal, charsize=1.2
 
 	xyouts, 0.925, 0.58, 'c', /normal	
 
@@ -279,11 +282,11 @@ pro goes_rhessi_fermi_dam_orfees, postscript=postscript
 	date_string = time2file(file2time(time0), /date)
 
 	if keyword_set(postscript) then begin
-		setup_ps, 'goes_rhessi_fermi_dam_orfees_20140418.eps
+		setup_ps, '~/goes_rhessi_fermi_dam_orfees_20140418.eps
 	endif else begin	
 		loadct, 0
 		window, 10, xs=900, ys=1200, retain=2
-		!p.charsize=1.5
+		!p.charsize=1.0
 		!p.color=255
 		!p.background=0
 	endelse			
@@ -356,9 +359,24 @@ pro goes_rhessi_fermi_dam_orfees, postscript=postscript
 		;			   PLOT
 		;***********************************;	
 
-		loadct, 74, /silent
+		plot_times = anytim(file2time([time0, time1]), /utim)
+		utplot, plot_times, [freq1, freq0],	$
+				/xs, $
+  				/ys, $
+  				/ylog, $
+				/nodata, $
+  				ytitle='Frequency (MHz)', $
+  				xtitle='Time (UT)', $
+  				yr=[freq1, freq0 ], $
+  				xrange = plot_times, $
+  				/noerase, $
+  				position = [0.11, 0.05, 0.95, 0.4], $
+  				xticklen = -0.012, $
+  				yticklen = -0.015
+
+  		loadct, 74, /silent
 		reverse_ct
-		scl_lwr = -0.4				;Lower intensity scale for the plots.
+		scl_lwr = -0.4				;Lower intensity scale for the plots.		
 
 		plot_spec, dam_spec, dam_time, dam_freqs, [freq0, freq1], [time0, time1], scl0=0.07, scl1=0.4
 		
@@ -366,7 +384,9 @@ pro goes_rhessi_fermi_dam_orfees, postscript=postscript
 		
 
 		set_line_color
-		xyouts, 0.925, 0.38, 'd', /normal, color=0
+		xyouts, 0.925-0.002, 0.38, 'd', /normal, color=0
+		xyouts, 0.925+0.002, 0.38, 'd', /normal, color=0
+		xyouts, 0.925, 0.38, 'd', /normal, color=1
 	
 	
 	if keyword_set(postscript) then begin
