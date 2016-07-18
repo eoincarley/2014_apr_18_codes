@@ -45,7 +45,7 @@ pro plot_spec, data, time, freqs, frange, trange, scl0=scl0, scl1=scl1
   				xrange = [ trange[0], trange[1] ], $
   				/noerase, $
   				position = [0.15, 0.15, 0.95, 0.95], $
-  				xticklen = -0.000001, $
+  				xticklen = -0.016, $
   				yticklen = -0.015, $
   				;xticks=1
   				;xtickv=[anytim('2014-04-18T12:43', /utim)]
@@ -72,8 +72,8 @@ pro dam_orfees_plot_gen_typeIII_0_zoom, save_orfees = save_orfees, postscript=po
 	orfees_folder = '~/Data/2014_apr_18/radio/orfees/'
 	freq0 = 10
 	freq1 = 1000
-	time0 = '20140418_123410'
-	time1 = '20140418_123500'
+	time0 = '20140418_124200'
+	time1 = '20140418_124600'
 	date_string = time2file(file2time(time0), /date)
 
 	;------------------------------------;
@@ -83,7 +83,7 @@ pro dam_orfees_plot_gen_typeIII_0_zoom, save_orfees = save_orfees, postscript=po
 	endif else begin
 		loadct, 0
 		reverse_ct
-		window, 0, xs=800, ys=800, retain=2
+		window, 10, xs=800, ys=800, retain=2
 		!p.charsize=1.5
 		!p.thick=1
 		!x.thick=1
@@ -246,7 +246,7 @@ pro dam_orfees_plot_gen_typeIII_0_zoom, save_orfees = save_orfees, postscript=po
 
 	;orf_spec = orf_spec + 0.5*orf_spec_high
 
-	plot_spec, smooth(dam_spec, 5), dam_time, dam_freqs, [freq0, freq1], [time0, time1], scl0=0.1, scl1=0.4
+	plot_spec, smooth(dam_spec, 5), dam_time, dam_freqs, [freq0, freq1], [time0, time1], scl0=0.0, scl1=0.6
 	plot_spec, smooth(orf_spec, 5), orf_time, reverse(orf_freqs), [freq0, freq1], [time0, time1], scl0=-0.25, scl1=0.7
 
 	if keyword_set(time_marker) then begin
