@@ -2,12 +2,12 @@ pro setup_ps, name
   
    set_plot,'ps'
    !p.font=0
-   !p.charsize=1.0
+   !p.charsize=0.9
    device, filename = name, $
           /color, $
           /helvetica, $
           /inches, $
-          xsize=2, $
+          xsize=5, $
           ysize=5, $
           bits_per_pixel=16, $
           /encapsulate, $
@@ -51,7 +51,7 @@ pro plot_spec, data, time, freqs, frange, trange, scl0=scl0, scl1=scl1
   				;xtickv=[anytim('2014-04-18T12:43', /utim)]
   				;xtickname=['2014-04-18T12:43']
   				;xtickformat='(A1)', $
-  				xtitle = ' '
+  				xtitle = 'Time (UT)'
 
   	;axis, xaxis=0, xrange = [ trange[0], trange[1] ], xticks=2, xticklen = -0.012, $
   	;		xtickname=['12:42:50', '12:43', '12:44:30']
@@ -72,14 +72,14 @@ pro dam_orfees_plot_gen_typeIII_0_zoom, save_orfees = save_orfees, postscript=po
 	orfees_folder = '~/Data/2014_apr_18/radio/orfees/'
 	freq0 = 10
 	freq1 = 1000
-	time0 = '20140418_124200'
-	time1 = '20140418_124600'
+	time0 = '20140418_123400'
+	time1 = '20140418_12354000'
 	date_string = time2file(file2time(time0), /date)
 
 	;------------------------------------;
 	;			Window params
 	if keyword_set(postscript) then begin 
-		setup_ps, '~/orfees_dam_'+date_string+'.eps'
+		setup_ps, '~/orfees_dam_typeIII_0_'+date_string+'.eps'
 	endif else begin
 		loadct, 0
 		reverse_ct

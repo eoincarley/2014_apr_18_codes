@@ -42,13 +42,13 @@ pro radio_kins
 		speeds = fltarr(nsteps)
 		all_model_speeds = findgen(n_elements(speeds), n_elements(models))
 
-		print, '**********************************'
+		print, '**************************************'
 		print, 'Restoring: ' + radio_drift_files[i]
 		restore, radio_drift_files[i], /verb
 		times = radio_drift.times   	;From ft_to_speed
 		freqs = radio_drift.freqs
 		tim_sec = times - times[0]
-		density = freq_to_dens( (freqs*1e6)/1.0 )
+		density = freq_to_dens( (freqs*1e6)/2.0 )
 		density0 = freq_to_dens( 298e6/2.0 )		;Frequency chosen to normalise models
 
 		;---------------------------------------------------------;
