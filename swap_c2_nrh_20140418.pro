@@ -15,7 +15,7 @@ pro setup_ps, name
 
 end
 
-pro swap_c2_nrh_20140418, postscript = postscript
+pro swap_c2_nrh_20140418, postscript=postscript
 
     ; Code to combine AIA, NRH and C2 observations of eruptive event on 2014-Apr-18
     if keyword_set(postscript) then begin
@@ -26,7 +26,7 @@ pro swap_c2_nrh_20140418, postscript = postscript
         window, 0, xs=winsz, ys=winsz
     endelse  
 
-    loadct, 57 ;33
+    loadct, 52	;57 ;33
     FOV = [5000/60.0, 5000/60.0]
     CENTER = [1000.0, -1000.0]
 
@@ -35,21 +35,30 @@ pro swap_c2_nrh_20140418, postscript = postscript
     ;--------------------------------------;
     cd,'~/Data/2014_Apr_18/white_light/lasco/c2/l1/'
     c2_files = findfile('*.fts')
-    c2index=1
+    c2index=0
     pre = lasco_readfits(c2_files[c2index], c2hdr_pre)
     mask = lasco_get_mask(c2hdr_pre)
     pre = pre*mask
-    img = lasco_readfits(c2_files[c2index+1], c2hdr)
+    img = lasco_readfits(c2_files[c2index+2], c2hdr)
     img = img*mask
-    imgbs = img - pre
-    imgbs = (imgbs- mean(imgbs))/stdev(imgbs)
+    imgbs = alog10(img) - alog10(pre) ;disk_nrgf(img, c2hdr, 0, 0) - disk_nrgf(pre, c2hdr_pre, 0, 0)
+    ;imgbs = (imgbs- mean(imgbs))/stdev(imgbs)
     c2map = make_map(imgbs)
     c2map.dx = 11.9
     c2map.dy = 11.9
     c2map.xc = 14.4704
     c2map.yc = 61.2137
 
+    plot_image, sigrange(imgbs), $
+    	title=c2hdr.date_obs
 
+
+    ;loadct, 74
+    window, 1, xs=700, ys=600, xpos=1850, ypos=200
+    test = imgbs - smooth(imgbs, 30)
+    ;test = ( test-mean(test) )/stdev(test)
+    plot_image, sigrange(test) ;> (-0.2) <0.2
+stop
     ;--------------------------------------;
     ;--------------SWAP Data---------------;
     ;--------------------------------------;   
@@ -86,7 +95,7 @@ pro swap_c2_nrh_20140418, postscript = postscript
     		gcolor=1, $
     		grid_spacing=15
 
-    oplot_nrh_on_three_color, tstart
+    ;oplot_nrh_on_three_color, tstart
  
     xyouts, 0.16, 0.16, 'NRH '+anytim(tstart, /cc, /trun)+' UT', /normal
     xyouts, 0.16, 0.185, 'SWAP '+ anytim(hdr.date_obs, /cc, /trun)+' UT', /normal

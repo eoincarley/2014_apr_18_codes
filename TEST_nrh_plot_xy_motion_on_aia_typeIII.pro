@@ -22,13 +22,13 @@ pro TEST_nrh_plot_xy_motion_on_aia_typeIII, postscript=postscript
 	;-------------------------------------------------;
 	;			Choose files unaffected by AEC
 	;
-	cd,'~/Data/2014_Apr_18/sdo/171/'
+	cd,'~/Data/2014_Apr_18/sdo/171A/'
 	aia_files = findfile('aia*.fits')
 	motion_files = findfile('~/Data/2014_apr_18/radio/nrh/nrh*src*motion.sav')
 	mreadfits_header, aia_files, ind, only_tags='exptime'
 	f = aia_files[where(ind.exptime gt 1.)]
 
-	tstart = anytim(file2time('20140418_123430'),/utim)
+	tstart = anytim(file2time('20140418_123435'),/utim)
 	tend   = anytim(file2time('20140418_124958'),/utim)
 
 	mreadfits_header, f, ind
@@ -55,7 +55,7 @@ pro TEST_nrh_plot_xy_motion_on_aia_typeIII, postscript=postscript
 	if keyword_set(postscript) then setup_ps, '~/typeIII_0_height.eps'	
 	;-----------------------------;
 	;				  Plot diff image	
-	FOV = [10., 10.]
+	FOV = [15., 15.]
 	CENTER = [525, -230]
 	loadct, 57, /silent
 	reverse_ct
@@ -92,12 +92,12 @@ pro TEST_nrh_plot_xy_motion_on_aia_typeIII, postscript=postscript
 		gthick=5.0, $	
 		gcolor=4, $
 		grid_spacing=0.5, $
-		inflate=1.16, $
+		inflate=1.15, $
 		xcor=xcor1, ycor=ycor1
 
 
- 	for i=115, n_elements(xcor0[255, *])-185, 5 do $
-		plots, [xcor0[249, i], xcor1[249, i]], [ycor0[249, i], ycor1[249, i]], thick=2, color=0, /data
+ 	;for i=115, n_elements(xcor0[255, *])-185, 5 do $
+	;	plots, [xcor0[249, i], xcor1[249, i]], [ycor0[249, i], ycor1[249, i]], thick=2, color=0, /data
 
 
 
@@ -112,5 +112,5 @@ pro TEST_nrh_plot_xy_motion_on_aia_typeIII, postscript=postscript
 		device, /close
 		set_plot, 'x'
 	endif	
-
+STOP
 END

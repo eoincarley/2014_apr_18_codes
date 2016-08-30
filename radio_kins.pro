@@ -27,10 +27,11 @@ pro radio_kins
 
 	!p.charsize=1.5
 	set_line_color
+	c = 2.9e5   ; km/s
 	rsun = 6.95e8	; m
-	models = ['mann', 'saito', 'newkirk', 'baum', 'st_hilaire_0', 'leblanc'];, 'hydro_stat']
+	models = ['saito', 'newkirk', 'baum', 'st_hilaire_0', 'leblanc'];, 'mann', 'hydro_stat']
 	colors=[4, 5, 6, 7, 8, 10]	
-	folder = '~/Data/2014_apr_18/radio/kinematics/type_IIIs/'
+	folder = '~/Data/2014_apr_18/radio/kinematics/type_III/'
 	radio_drift_files = findfile(folder+'/*drift*.sav')	
 	nsteps = 100
 	max_fold = alog10(100.)
@@ -48,6 +49,24 @@ pro radio_kins
 		times = radio_drift.times   	;From ft_to_speed
 		freqs = radio_drift.freqs
 		tim_sec = times - times[0]
+
+		window, 5, xs=400, ys=400, xpos=2000, ypos=2000
+		plot, tim_sec, freqs, $
+			/xs, $
+			/ys, $
+			;xr=[-0.1, 0.4], $
+			psym=4, $
+			;yr=[290, 140], $
+			xtitle='Time (s)', $
+			ytitle='Freqyency (MHz)'
+
+
+
+		oplot, tim_sec, freqs	 
+		result = linfit(tim_sec, freqs, yfit=yfit)	 
+		drift_rate = result[1]
+		oplot, tim_sec, yfit, linestyle=1
+
 		density = freq_to_dens( (freqs*1e6)/2.0 )
 		density0 = freq_to_dens( 298e6/2.0 )		;Frequency chosen to normalise models
 
@@ -77,6 +96,7 @@ pro radio_kins
 		for j=0, n_elements(models)-1 do begin
 			limit_found = 0
 			for k=0, n_elements(folds)-1 do begin
+				
 				rads = density_to_radius(density, model=models[j], fold=folds[k])
 				result = linfit(tim_sec, rads, yfit=yfit)
 				speeds[k] = result[1]*rsun/1e3 	; km/s
@@ -95,9 +115,17 @@ pro radio_kins
 				if min(rads0) ge 1.16 and limit_found eq 0 then begin
 					physical_limit = [folds[k], speeds[k]]
 					limit_found = 1
-					print, models[j]
-					print, folds[k]
-					print, speeds[k]/2.9e5
+					print, 'Drift Rate (MHz/s): '+ string(drift_rate)
+					print, 'Model: '+string(models[j])
+					print, 'Fold: '+string(folds[k])
+					speed = speeds[k]
+					print, 'Apparent speed (c): ' + string(speed/c)
+
+					v_app = speed
+					v_real = (c*v_app)/( c + v_app)
+					print, 'Real speed (c): ' + string(v_real/c)
+					print, '-----------------'
+					print, ' '
 
 				endif	
 
@@ -122,8 +150,11 @@ pro radio_kins
 
 		
 		;---------------------------------------------------------;
+		;
 		; Plot standard deviation as function of model and fold		
-		; The fold that fives the smallest standard deviation is the one to be used.
+		; The fold that fives the smallest standard deviation is 
+		; the one to be used.
+		;
 		sigma_letter = Greek('sigma')
 
 		sdev = stddev(all_model_speeds, dim=2, /nan)

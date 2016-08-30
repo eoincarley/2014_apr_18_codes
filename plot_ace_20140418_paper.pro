@@ -40,7 +40,7 @@ pro plot_ace_20140418_paper
 	epam_electrons = epam_data[9:11, *]
 
 
-	utplot, epam_data[0, *], epam_electrons[0, *], $
+	utplot, epam_data[0, *], smooth(epam_electrons[0, *], 3), $
 			/xs, $
 			yr = [10, 1e5], $
 			/ylog, $
@@ -55,7 +55,7 @@ pro plot_ace_20140418_paper
 			;/noerase
 
 	for i=1, 2  do begin
-		outplot, epam_data[0, *], epam_electrons[i, *], $
+		outplot, epam_data[0, *], smooth(epam_electrons[i, *], 3), $
 				color = i*70.0, linestyle=i+1, thick=7
 	endfor	
 

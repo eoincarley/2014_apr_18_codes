@@ -1,6 +1,8 @@
 function my2Dgauss, x, y, pars
 
 	;This is for use in mpfit2dfun below
+	;result_pars = MPFIT2DFUN('my2Dgauss', xjunk, yjunk, junk_array, ERR, $
+	;		start_parms, perror=perror, yfit=yfit)
 
 	z = dblarr(n_elements(x),n_elements(y))
 
